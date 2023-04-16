@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from planets import earth, moon
+import scipy as sp
 
 global pi; pi = 3.14159
 global G; G = 6.6743e-20  # km^3/kg/s^2
@@ -54,7 +55,7 @@ class spacecraft:
         elif self.config['state0']:
             pass
             # calculate coes
-        # print(self.state[0,3:6])
+
         self.prop_moon()
         self.prop_sc()
 
