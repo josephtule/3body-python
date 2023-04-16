@@ -77,7 +77,7 @@ class spacecraft:
         dxdt[0:3] = v
         
         egrav = - r * earth['mu'] / np.linalg.norm(r)**3
-        mgrav = - (r - r_EM) * moon['mu'] / np.linalg.norm(r - r_EM)**3
+        mgrav = - 0*(r - r_EM) * moon['mu'] / np.linalg.norm(r - r_EM)**3
         dxdt[3:6] = egrav + mgrav
         return dxdt
 
