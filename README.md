@@ -1,6 +1,6 @@
 # 3body-python
 
-The intent of this project is to create a 3-body simulator that will eventually 
+The intent of this project is to create a 3-body simulator that will eventually generate an optimal trajectory from an orbit about the Earth to an orbit about the Moon, then generate an optimal control sequence in order to stay in the reference trajectory.
 
 
 ## Equations of Motion
@@ -22,3 +22,12 @@ Where the subscripts represent a vector from the first element (E - Earth, M - M
 ### Gravitational
 ### Aerodynamic
 ### 
+
+
+## Numerical Integration
+### RK4
+### RK45
+
+## Optimial Transfer Trajectory
+
+## Optimal Control
