@@ -50,23 +50,23 @@ class spacecraft:
         self.scm = np.zeros([self.N, len(self.config['state0'])])
         self.scm[0, :] = self.config['state0'] - self.config['m_state0']
 
-        if self.config['coes']:
-            pass
-            # calculate states
-        elif self.config['state0']:
-            pass
-            # calculate coes
+            # if self.config['coes']:
+            #     pass
+            #     # calculate states
+            # elif self.config['state0']:
+            #     pass
+            #     # calculate coes
 
         self.prop_moon()
         self.prop_sc()
 
     def prop_moon(self):
         for i in range(self.N-1):
-            self.m_state[i+1, :] = self.rk4(self.m_eoms, self.m_state[i, :], i)
+            self.m_state[i+1, :] = self.rk45(self.m_eoms, self.m_state[i, :], i)
 
     def prop_sc(self):
         for i in range(self.N-1):
-            self.state[i+1, :] = self.rk4(self.sc_eoms, self.state[i, :], i)
+            self.state[i+1, :] = self.rk45(self.sc_eoms, self.state[i, :], i)
             self.scm[i+1, :] = self.state[i+1, :] - self.m_state[i+1, :]
 
     def sc_eoms(self, state, i):
@@ -81,7 +81,7 @@ class spacecraft:
         dxdt[0:3] = v
 
         egrav = - r * earth['mu'] / np.linalg.norm(r)**3
-        mgrav = - 0*(r - r_EM) * moon['mu'] / np.linalg.norm(r - r_EM)**3
+        mgrav = - (r - r_EM) * moon['mu'] / np.linalg.norm(r - r_EM)**3
         dxdt[3:6] = egrav + mgrav
         return dxdt
 
@@ -102,18 +102,19 @@ class spacecraft:
         k4 = self.dt * f(x+k3, i)
         return x + 1/6 * (k1 + 2*k2 + 2*k3 + k4)
 
-    # def rk4(self,f, i):
-    #     B = np.array([[0, 0, 0, 0, 0],
-    #                  [2/9, 0, 0, 0, 0],
-    #                  [1/12, 1/4, 0, 0, 0],
-    #                  [69/128, -243/128, 135/64, 0, 0],
-    #                  [-17/12, 27/4, -27/5, 16/15, 0],
-    #                  [65/432, -5/16, 13/16, 4/27, 5/144]])
-    #     CH = np.array([47/450, 0, 12/25, 32/225, 1/30, 6/25])
-    #     k1 = self.dt * f(self.state(:, i))
-    #     k2 = self.dt * f(self.state(: , i) + B(2, 1)*k1)
-    #     k3 = self.dt * f(self.state(:, i) + B(3, 1)*k1 + B(3, 2)*k2)
-    #     k4 = self.dt * f(self.state(: , i) + B(4, 1)*k1 + B(4, 2)*k2 + B(4, 3)*k3)
-    #     k5 = self.dt * f(self.state(:, i) + B(5, 1)*k1 + B(5, 2)*k2 + B(5, 3)*k3 + B(5, 4)*k4)
-    #     k6 = self.dt * f(self.state(: , i) + B(6, 1)*k1 + B(6, 2)*k2 + B(6, 3)*k3 + B(6, 4)*k4 + B(6, 5)*k5)
-    #     self.state(:, i+1) = sc.state(: , i) + CH(1)*k1 + CH(2)*k2 + CH(3)*k3 + CH(4)*k4 + CH(5)*k5 + CH(6)*k6
+
+    def rk45(self,f,x, i):
+        B = np.array([[0, 0, 0, 0, 0],
+                     [2/9, 0, 0, 0, 0],
+                     [1/12, 1/4, 0, 0, 0],
+                     [69/128, -243/128, 135/64, 0, 0],
+                     [-17/12, 27/4, -27/5, 16/15, 0],
+                     [65/432, -5/16, 13/16, 4/27, 5/144]])
+        CH = np.array([47/450, 0, 12/25, 32/225, 1/30, 6/25])
+        k1 = self.dt * f(x,i)
+        k2 = self.dt * f(x+B[1,0]*k1,i)
+        k3 = self.dt * f(x + B[2,0]*k1 + B[2,1]*k2,i)
+        k4 = self.dt * f(x + B[3,0]*k1 + B[3,1]*k2 + B[3,2]*k3,i)
+        k5 = self.dt * f(x + B[4,0]*k1 + B[4,1]*k2 + B[4,2]*k3 + B[4,3]*k4,i)
+        k6 = self.dt * f(x + B[5,0]*k1 + B[5,1]*k2 + B[5,2]*k3 + B[5,3]*k4 + B[5,4]*k5,i)
+        return x + CH[0]*k1 + CH[1]*k2 + CH[2]*k3 + CH[3]*k4 + CH[4]*k5 + CH[5]*k6
