@@ -25,8 +25,20 @@ and
 
 $$ \ddot{\vec{r}}_{EM} = -\frac{\mu_{E}}{||\vec{r}_{EM}||^3} \vec{r}_{EM} $$ 
 
-
 Where the subscripts represent a vector from the first element (E - Earth, M - Moon, S - Spacecraft) to the second element.
+
+### State Space
+
+To allow for trajectory optimization, we will take to account the position of the moon at all times, this will result in size 12 state vector, with the state being:
+
+$$
+\vec{x} =  \left\lbrack \begin{array}{c}
+r_{ES} \\
+r_{EM} \\
+\dot{r}_{ES} \\
+\dot{r}_{EM} \\
+\end{array}\right\rbrack
+$$
 
 ## Perturbations
 
