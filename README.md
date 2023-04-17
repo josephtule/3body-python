@@ -39,10 +39,10 @@ $$
 \dot{\vec{r}}_{EM} \\
 \end{array}\right\rbrack = 
 \left\lbrack \begin{array}{c}
-x_{1:3} \\ 
-x_{4:6} \\ 
-x_{7:9} \\ 
-x_{10:12}
+\vec{x}_{1:3} \\ 
+\vec{x}_{4:6} \\ 
+\vec{x}_{7:9} \\ 
+\vec{x}_{10:12}
 \end{array}\right\rbrack
 $$
 
