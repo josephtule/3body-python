@@ -51,6 +51,10 @@ Where the subscripts represent a vector from the first element (E - Earth, M - M
 ## Optimal Control
 ### Model Predictive Control
 
+## Future Plans
+- Allow rendezvous with other spacecraft
+- Allow central body changes
+- Change code to reflect above changes
 
 ## References
 https://epubs.siam.org/doi/pdf/10.1137/16M1062569  
