@@ -54,6 +54,8 @@ x_{12}
 \end{array}\right\rbrack
 $$
 
+After the optimal trajectory has been generated, the state can be reduced to a state vector of size 6, and including the dynamics for the moon along with the generated trajectory since the orbit of the moon is assumed not to be affected by the spacecraft.
+
 ## Perturbations
 
 ### Gravitational
