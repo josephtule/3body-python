@@ -33,10 +33,10 @@ To allow for trajectory optimization, we will take to account the position of th
 
 $$
 \vec{x} =  \left\lbrack \begin{array}{c}
-r_{ES} \\
-r_{EM} \\
-\dot{r}_{ES} \\
-\dot{r}_{EM} \\
+\vec{r}_{ES} \\
+\vec{r}_{EM} \\
+\dot{\vec{r}}_{ES} \\
+\dot{\vec{r}}_{EM} \\
 \end{array}\right\rbrack
 $$
 
