@@ -39,7 +39,18 @@ $$
 \dot{\vec{r}}_{EM} \\
 \end{array}\right\rbrack = 
 \left\lbrack \begin{array}{c}
-x_1 \\ x_2 \\ x_3 \\ x_4 \\ x_5 \\ x_6 \\ x_7 \\ x_8 \\ x_9 \\ x_10 \\ x_11 \\ x_12
+x_1 \\ 
+x_2 \\ 
+x_3 \\ 
+x_4 \\ 
+x_5 \\ 
+x_6 \\ 
+x_7 \\ 
+x_8 \\ 
+x_9 \\ 
+x_{10} \\ 
+x_{11} \\ 
+x_{12}
 \end{array}\right\rbrack
 $$
 
