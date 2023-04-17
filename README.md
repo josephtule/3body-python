@@ -41,4 +41,11 @@ Where the subscripts represent a vector from the first element (E - Earth, M - M
 
 ## Optimial Transfer Trajectory
 
+
 ## Optimal Control
+### Model Predictive Control
+
+
+## References
+https://epubs.siam.org/doi/pdf/10.1137/16M1062569
+https://www.youtube.com/watch?v=yMJ_VU3jt7c
