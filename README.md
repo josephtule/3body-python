@@ -2,6 +2,16 @@
 
 The intent of this project is to create a 3-body simulator that will eventually generate an optimal trajectory from an orbit about the Earth to an orbit about the Moon, then generate an optimal control sequence in order to stay in the reference trajectory.
 
+## Assumptions
+To start, we will assume the following:
+
+- The initial orbit Earth-Moon system is circular
+- The Moon orbits around the Earth's equator
+- There are no other bodies outside of the 3 body system that may affect the orbits
+
+
+These assumptions can be removed at later phases with additional modeling.
+
 
 ## Equations of Motion
 Using the Earth as the central body in an ECI reference frame, the equations of motion can be represented as the following:
