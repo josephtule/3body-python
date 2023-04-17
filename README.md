@@ -57,6 +57,12 @@ $$
 \dot{\vec{x}}_{4:6} \\ 
 \dot{\vec{x}}_{7:9} \\ 
 \dot{\vec{x}}_{10:12}
+\end{array}\right\rbrack = 
+\left\lbrack \begin{array}{c}
+\vec{x}_{7:9} \\ 
+\vec{x}_{10:12} \\ 
+-\frac{\vec{x}_{1:3}^T\vec{x}_{1:3}}{1} \vec{x}_{1:3} \\ 
+\vec{x}_{10:12}
 \end{array}\right\rbrack
 $$
 
