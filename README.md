@@ -40,7 +40,13 @@ Where the subscripts represent a vector from the first element (E - Earth, M - M
 ### RK45
 
 ## Optimial Transfer Trajectory
-
+### Cost Function(al)
+### Constraints
+- System Dyanmics
+- Path Constraints
+- Boundary Constraints
+- Path and Control Bounds
+- Time and Time-Dependent State Bounds
 
 ## Optimal Control
 ### Model Predictive Control
