@@ -48,6 +48,19 @@ $$
 
 After the optimal trajectory has been generated, the state can be reduced to a state vector of size 6, and including the dynamics for the moon along with the generated trajectory since the orbit of the moon is assumed not to be affected by the spacecraft.
 
+Taking the derivative of the state vector yields
+
+$$
+\dot{\vec{x}} = 
+\left\lbrack \begin{array}{c}
+\dot{\vec{x}}_{1:3} \\ 
+\dot{\vec{x}}_{4:6} \\ 
+\dot{\vec{x}}_{7:9} \\ 
+\dot{\vec{x}}_{10:12}
+\end{array}\right\rbrack
+$$
+
+
 ## Perturbations
 
 ### Gravitational
