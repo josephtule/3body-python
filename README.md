@@ -10,6 +10,11 @@ $$ \ddot{\vec{r}}_{ES} = -\frac{\mu_{E}}{||\vec{r}_{ES}||^3} \vec{r}_{ES} -\frac
 
 $$ = -\frac{\mu_{E}}{||\vec{r}_{ES}||^3} \vec{r}_{ES} -\frac{\mu_{M}}{||\vec{r}_{ES} - \vec{r}_{EM}||^3} (\vec{r}_{ES} - \vec{r}_{EM})$$ 
 
+and 
+
+$$ \ddot{\vec{r}}_{EM} = -\frac{\mu_{E}}{||\vec{r}_{EM}||^3} \vec{r}_{EM} $$ 
+
+
 Where the subscripts represent a vector from the first element (E - Earth, M - Moon, S - Spacecraft) to the second element.
 
 ## Perturbations
