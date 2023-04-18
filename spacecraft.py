@@ -188,7 +188,7 @@ class spacecraft:
     #     return 0
 
     def optimize_trajectory(self):
-        m = GEKKO()
+        m = GEKKO(remote=False)
 
         m.time = np.linspace(
             self.config['tspan'][0], self.config['tspan'][1], self.N)
