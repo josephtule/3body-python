@@ -170,28 +170,26 @@ class spacecraft:
         uy.STATUS = 1
         uz.STATUS = 1
         # intermediate variables
-        # Rs = m.Intermediate((xs**2+ys**2+zs**2)**0.5)
-        # Rm = m.Intermediate((xm**2+ym**2+zm**2)**0.5)
-        # Rms = m.Intermediate(((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)**0.5)
-        # umag = m.Intermediate((ux**2+uy**2+uz**2))
+        Rs = m.Intermediate((xs**2+ys**2+zs**2)**0.5)
+        Rm = m.Intermediate((xm**2+ym**2+zm**2)**0.5)
+        Rms = m.Intermediate(((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)**0.5)
+        umag = m.Intermediate((ux**2+uy**2+uz**2))
 
         # EOMS
         m.Equations((xs.dt() == vxs, ys.dt() == vys, zs.dt() == vzs,))
         m.Equations((
-            vxs.dt() == ux - earth['mu'] / ((xs**2+ys**2+zs**2)**0.5)**3 * xs -
-            moon['mu'] / (((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)
-                          ** 0.5)**3 * (xs-xm),
-            vys.dt() == uy - earth['mu'] / ((xs**2+ys**2+zs**2)**0.5)**3 * ys -
-            moon['mu'] / (((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)
-                          ** 0.5)**3 * (ys-ym),
-            vzs.dt() == uz - earth['mu'] / ((xs**2+ys**2+zs**2)**0.5)**3 * zs -
-            moon['mu'] / (((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)**0.5)**3 * (zs-zm)
+            vxs.dt() == ux - earth['mu'] / Rs**3 * xs -
+            moon['mu'] / Rms**3 * (xs-xm),
+            vys.dt() == uy - earth['mu'] / Rs**3 * ys -
+            moon['mu'] / Rms**3 * (ys-ym),
+            vzs.dt() == uz - earth['mu'] / Rs**3 * zs -
+            moon['mu'] / Rms**3 * (zs-zm)
         ))
         m.Equations((xm.dt() == vxm, ym.dt() == vym, zm.dt() == vzm,))
         m.Equations(
-            (vxm.dt() == - earth['mu'] / ((xm**2+ym**2+zm**2)**0.5)**3 * xm,
-             vym.dt() == - earth['mu'] / ((xm**2+ym**2+zm**2)**0.5)**3 * ym,
-             vzm.dt() == - earth['mu'] / ((xm**2+ym**2+zm**2)**0.5)**3 * zm))
+            (vxm.dt() == - earth['mu'] / Rm**3 * xm,
+             vym.dt() == - earth['mu'] / Rm**3 * ym,
+             vzm.dt() == - earth['mu'] / Rm**3 * zm))
 
         final = np.zeros_like(m.time)
         final[-1] = 1.0
@@ -200,7 +198,7 @@ class spacecraft:
         # Inequality Constraints
         m.Equation(((xs**2+ys**2+zs**2)**0.5) > earth['radius'])
         m.Equation((((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)**0.5) > moon['radius'])
-        # m.Equation(((ux**2+uy**2+uz**2)) <= 5)
+        # m.Equation(umag <= (10)^2)
 
         # Equality Constraints
         m.Equation((((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)**0.5)
