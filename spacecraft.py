@@ -193,7 +193,7 @@ class spacecraft:
         m.time = np.linspace(
             self.config['tspan'][0], self.config['tspan'][1], self.N)
         tf = m.FV(value=self.config['tspan'][1],
-                  lb=self.config['tspan'][0], ub=self.config['tspan'][1]*2)
+                  lb=self.config['tspan'][0], ub=self.config['tspan'][1]*5)
 
         # state variables
         xs = m.Var(value=self.config['state0'][0])
@@ -213,22 +213,22 @@ class spacecraft:
         uy = m.MV(value=0)
         uz = m.MV(value=0)
         # intermediate variables
-        xms = m.Intermediate(xs-xm)
-        yms = m.Intermediate(ys-ym)
-        zms = m.Intermediate(zs-zm)
-        vxms = m.Intermediate(vxs-vxm)
-        vyms = m.Intermediate(vys-vym)
-        vzms = m.Intermediate(vzs-vzm)
+        # xms = m.Intermediate(xs-xm)
+        # yms = m.Intermediate(ys-ym)
+        # zms = m.Intermediate(zs-zm)
+        # vxms = m.Intermediate(vxs-vxm)
+        # vyms = m.Intermediate(vys-vym)
+        # vzms = m.Intermediate(vzs-vzm)
         Rs = m.Intermediate((xs**2+ys**2+zs**2)**0.5)
         Rm = m.Intermediate((xm**2+ym**2+zm**2)**0.5)
-        Rms = m.Intermediate((xms**2+yms**2+zms**2)**0.5)
-        umag = m.Intermediate((ux**2+uy**2+uz**2)**0.5)
+        Rms = m.Intermediate(((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)**0.5)
+        umag = m.Intermediate((ux**2+uy**2+uz**2))
         axs = m.Intermediate(
-            ux - earth['mu'] / Rs**3 * xs - moon['mu'] / Rms**3 * xms)
+            ux - earth['mu'] / Rs**3 * xs - moon['mu'] / Rms**3 * (xs-xm))
         ays = m.Intermediate(
-            uy - earth['mu'] / Rs**3 * ys - moon['mu'] / Rms**3 * yms)
+            uy - earth['mu'] / Rs**3 * ys - moon['mu'] / Rms**3 * (ys-ym))
         azs = m.Intermediate(
-            uz - earth['mu'] / Rs**3 * zs - moon['mu'] / Rms**3 * zms)
+            uz - earth['mu'] / Rs**3 * zs - moon['mu'] / Rms**3 * (zs-zm))
         axm = m.Intermediate(- earth['mu'] / Rm**3 * xm)
         aym = m.Intermediate(- earth['mu'] / Rm**3 * ym)
         azm = m.Intermediate(- earth['mu'] / Rm**3 * zm)
@@ -250,12 +250,12 @@ class spacecraft:
         # Inequality Constraints
         m.Equation(Rs > earth['radius'])
         m.Equation(Rms > moon['radius'])
-        m.Equation(umag >= 0)
         m.Equation(umag <= 5)
 
         # Equality Constraints
         m.Equation(Rms * final == self.config['final_moon_radius'])
-        m.Equation((xms*vxms*final)+(yms*vyms*final)+(yms*vyms*final) == 0)
+        m.Equation(((xs-xm)*(vxs-vxm)*final)+((ys-ym)*(vys-vym)*final) +
+                   ((zs-zm)*(vzs-vzm)*final) == 0)
 
         # Objective Function
 
