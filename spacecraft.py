@@ -142,66 +142,20 @@ class spacecraft:
                          B[5, 2]*k3 + B[5, 3]*k4 + B[5, 4]*k5, i)
         return x + CH[0]*k1 + CH[1]*k2 + CH[2]*k3 + CH[3]*k4 + CH[4]*k5 + CH[5]*k6
 
-    def syseoms(self, x, u, t):
-        dxdt = np.zeros([12])
-        dxdt[0:6] = x[0:6]
-
-        egrav = - x[0:3] * earth['mu'] / np.linalg.norm(x[0:3])**3
-        mgrav = - (x[0:3] - x[3:6]) * moon['mu'] / \
-            np.linalg.norm(x[0:3] - x[3:6])**3
-        dxdt[6:9] = egrav + mgrav + u
-        dxdt[9:12] = - x[3:6] * earth['mu'] / np.linalg.norm(x[3:6])**3
-        return dxdt
-
-    def obj_fun(self, x, u, t):
-        J = 0
-        for k in range(self.N):
-            h = t[k+1] - t[k]
-            J = J + (h / 2) * ((t[k]**2 + np.linalg.norm(x[k, :])**2 + np.linalg.norm(u[k, :])**2) + (
-                t[k+1]**2 + np.linalg.norm(x[k+1, :])**2 + np.linalg.norm(u[k+1, :])**2))
-        return J
-
-    # def optimize_trajectory(self):
-    #     # initial guesses
-    #     init_state = np.concatenate((self.state,self.m_state),axis=1)
-    #     init_control = np.array(self.control)
-    #     init_time = np.array(self.t)
-    #     print(np.shape(init_state),np.shape(init_control),np.shape(init_time))
-
-    #     xinit = np.concatenate((init_state,init_control,init_time),axis=1)
-    #     print(np.shape([xinit]))
-
-    #     cons = (
-    #         {'type': 'eq', 'fun': lambda x:  x[k+1, 0:3] - x[k, 0:3] - (t[k+1] - t[k])/2 * (
-    #             self.syseoms(x[k, :], u[k, :], t[k]) + self.syseoms(x[k+1, :], u[k+1, :], t[k+1]))},
-    #         # {'type': 'eq', 'fun': lambda x: (np.linalg.norm(
-    #         #     x[self.N, 0:3] - x[self.N, 3:6]) - self.config['final_moon_radius'])},  # g1
-    #         # # g2
-    #         # {'type': 'eq', 'fun': lambda x: np.dot(x[self.N, 0:3]-x[self.N, 3:6], x[self.N, 6:9]-x[self.N,9:12])},
-    #         # {'type': 'eq', 'fun': lambda x: x[0, :] - np.concatenate(self.config['state0'], self.config['m_state0'])},  # x[0] = x0
-    #         # {'type': 'ineq', 'fun': lambda x, u, t, k: 1},
-    #         # {'type': 'ineq', 'fun': lambda x, u, t, k: 1},
-    #         # {'type': 'ineq', 'fun': lambda x, u, t, k: 1},
-    #         # {'type': 'ineq', 'fun': lambda x, u, t, k: 1}
-    #     )
-    #     res = opt.minimize(lambda x: self.obj_fun(x), xinit, method='SLSQP', constraints=cons)
-    #     return 0
-
     def optimize_trajectory(self):
-        m = GEKKO(remote=False)
+        m = GEKKO(remote=True)
 
         m.time = np.linspace(
             self.config['tspan'][0], self.config['tspan'][1], self.N)
-        tf = m.FV(value=self.config['tspan'][1],
-                  lb=self.config['tspan'][0], ub=self.config['tspan'][1]*5)
+        tf = m.FV()
 
         # state variables
-        xs = m.Var(value=self.config['state0'][0])
-        ys = m.Var(value=self.config['state0'][1])
-        zs = m.Var(value=self.config['state0'][2])
-        vxs = m.Var(value=self.config['state0'][3])
-        vys = m.Var(value=self.config['state0'][4])
-        vzs = m.Var(value=self.config['state0'][5])
+        xs = m.CV(value=self.config['state0'][0])
+        ys = m.CV(value=self.config['state0'][1])
+        zs = m.CV(value=self.config['state0'][2])
+        vxs = m.CV(value=self.config['state0'][3])
+        vys = m.CV(value=self.config['state0'][4])
+        vzs = m.CV(value=self.config['state0'][5])
         xm = m.Var(value=self.config['m_state0'][0])
         ym = m.Var(value=self.config['m_state0'][1])
         zm = m.Var(value=self.config['m_state0'][2])
@@ -209,59 +163,57 @@ class spacecraft:
         vym = m.Var(value=self.config['m_state0'][4])
         vzm = m.Var(value=self.config['m_state0'][5])
         # control variables
-        ux = m.MV(value=0)
-        uy = m.MV(value=0)
-        uz = m.MV(value=0)
+        ux = m.MV()
+        uy = m.MV()
+        uz = m.MV()
         # intermediate variables
-        # xms = m.Intermediate(xs-xm)
-        # yms = m.Intermediate(ys-ym)
-        # zms = m.Intermediate(zs-zm)
-        # vxms = m.Intermediate(vxs-vxm)
-        # vyms = m.Intermediate(vys-vym)
-        # vzms = m.Intermediate(vzs-vzm)
-        Rs = m.Intermediate((xs**2+ys**2+zs**2)**0.5)
-        Rm = m.Intermediate((xm**2+ym**2+zm**2)**0.5)
-        Rms = m.Intermediate(((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)**0.5)
-        umag = m.Intermediate((ux**2+uy**2+uz**2))
-        axs = m.Intermediate(
-            ux - earth['mu'] / Rs**3 * xs - moon['mu'] / Rms**3 * (xs-xm))
-        ays = m.Intermediate(
-            uy - earth['mu'] / Rs**3 * ys - moon['mu'] / Rms**3 * (ys-ym))
-        azs = m.Intermediate(
-            uz - earth['mu'] / Rs**3 * zs - moon['mu'] / Rms**3 * (zs-zm))
-        axm = m.Intermediate(- earth['mu'] / Rm**3 * xm)
-        aym = m.Intermediate(- earth['mu'] / Rm**3 * ym)
-        azm = m.Intermediate(- earth['mu'] / Rm**3 * zm)
+        # Rs = m.Intermediate((xs**2+ys**2+zs**2)**0.5)
+        # Rm = m.Intermediate((xm**2+ym**2+zm**2)**0.5)
+        # Rms = m.Intermediate(((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)**0.5)
+        # umag = m.Intermediate((ux**2+uy**2+uz**2))
 
         # EOMS
         m.Equations((xs.dt() == vxs, ys.dt() == vys, zs.dt() == vzs,))
-        m.Equations((vxs.dt() == axs, vys.dt() == ays, vzs.dt() == azs))
+        m.Equations((
+            vxs.dt() == ux - earth['mu'] / ((xs**2+ys**2+zs**2)**0.5)**3 * xs -
+            moon['mu'] / (((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)
+                          ** 0.5)**3 * (xs-xm),
+            vys.dt() == uy - earth['mu'] / ((xs**2+ys**2+zs**2)**0.5)**3 * ys -
+            moon['mu'] / (((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)
+                          ** 0.5)**3 * (ys-ym),
+            vzs.dt() == uz - earth['mu'] / ((xs**2+ys**2+zs**2)**0.5)**3 * zs -
+            moon['mu'] / (((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)**0.5)**3 * (zs-zm)
+        ))
         m.Equations((xm.dt() == vxm, ym.dt() == vym, zm.dt() == vzm,))
-        m.Equations((vxm.dt() == axm, vym.dt() == aym, vzm.dt() == azm))
+        m.Equations(
+            (vxm.dt() == - earth['mu'] / ((xm**2+ym**2+zm**2)**0.5)**3 * xm,
+             vym.dt() == - earth['mu'] / ((xm**2+ym**2+zm**2)**0.5)**3 * ym,
+             vzm.dt() == - earth['mu'] / ((xm**2+ym**2+zm**2)**0.5)**3 * zm))
 
         final = np.zeros_like(m.time)
         final[-1] = 1.0
         final = m.Param(value=final)
 
-        intial = np.zeros_like(m.time)
-        intial[0] = 1.0
-        intial = m.Param(value=intial)
-
         # Inequality Constraints
-        m.Equation(Rs > earth['radius'])
-        m.Equation(Rms > moon['radius'])
-        m.Equation(umag <= 5)
+        # m.Equation(((xs**2+ys**2+zs**2)**0.5) > earth['radius'])
+        # m.Equation((((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)**0.5) > moon['radius'])
+        # m.Equation(umag <= 5)
 
         # Equality Constraints
-        m.Equation(Rms * final == self.config['final_moon_radius'])
-        m.Equation(((xs-xm)*(vxs-vxm)*final)+((ys-ym)*(vys-vym)*final) +
-                   ((zs-zm)*(vzs-vzm)*final) == 0)
+        # m.Equation((((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)**0.5) * final == self.config['final_moon_radius'])
+        # m.Equation(((xs-xm)*(vxs-vxm)*final)+((ys-ym)*(vys-vym)*final) +
+        #            ((zs-zm)*(vzs-vzm)*final) == 0)
 
         # Objective Function
-
-        m.Obj(umag**2 + Rms**2 + tf*final)
+        m.Minimize(((ux**2+uy**2+uz**2)) + tf*final)
         m.options.IMODE = 6
-        m.options.MAX_ITER = 500
+        m.options.MAX_ITER = 50
         m.options.NODES = 4
+        m.options.SOLVER = 3
 
-        m.solve(disp=True)
+        m.solve()
+
+        plt.plot(ux.value)
+        plt.title('cool')
+        plt.show()
+        return m
