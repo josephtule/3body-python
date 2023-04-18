@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from planets import earth, moon
 import scipy as sp
+import sys
 
 global pi
 pi = 3.14159
@@ -16,10 +17,11 @@ def default_config():
         'moon_prop': 1,
         'coes': [],
         'perts': [],
-        'dt': 1,
+        'dt': 0,
         'tspan': [0, 100],
         'N': 0,
-
+        'propagate': 1,
+        'gen_opt': 0,
         'specs': {
             'Cd': 2.2,
             'area': (1e-3)**2/4,
@@ -38,10 +40,18 @@ class spacecraft:
             self.config[key] = config[key]
 
         self.dt = self.config['dt']
+        self.N = self.config['N']
         if self.dt:
             self.N = (self.config['tspan'][1] -
                       self.config['tspan'][0])/self.dt + 1
             self.N = int(self.N)
+        elif self.N:
+            self.dt = (self.config['tspan'][1] - self.config['tspan'][0])/self.N
+            # print(self.dt)
+        else:
+            print("Error - no step size or step count specified")
+            sys.exit()
+
 
         self.state = np.zeros([self.N, len(self.config['state0'])])
         self.m_state = np.zeros([self.N, len(self.config['m_state0'])])
@@ -58,7 +68,9 @@ class spacecraft:
             #     # calculate coes
 
         self.prop_moon()
-        self.prop_sc()
+        
+        if self.config['propagate']:
+            self.prop_sc()
 
     def prop_moon(self):
         for i in range(self.N-1):
@@ -101,7 +113,6 @@ class spacecraft:
         k3 = self.dt * f(x+k2/2, i)
         k4 = self.dt * f(x+k3, i)
         return x + 1/6 * (k1 + 2*k2 + 2*k3 + k4)
-
 
     def rk45(self,f,x, i):
         B = np.array([[0, 0, 0, 0, 0],

@@ -22,14 +22,15 @@ if __name__ == '__main__':
     earthalt = 250
     sc_v = np.sqrt(earth['mu'] * (2 / (earth['radius'] + earthalt) - 1/(earth['radius'] + earthalt)))
     config_hardlaunch = {
-        'state0': np.array([0, -(earth['radius'] + earthalt), 0, sc_v*np.sqrt(2)*.98, 0, 0]),
+        'state0': np.array([0, -(earth['radius'] + earthalt), 0, sc_v*np.sqrt(2)*.99, 0, 0]),
         'm_state0': np.array([moon['radius_earth'], 0, 0, 0, m_vc, 0]),
-        'tspan': [0, 60*60*24*1],
-        'dt': 100
+        'tspan': [0, 60*60*24*30],
+        'N': 10000,
+        'propagate': 1,
     }
 
     plt.figure(1)
-    sc = SC(config_moonorbit)
+    sc = SC(config_hardlaunch)
     ax = plt.axes(projection='3d')
     ax.plot3D(sc.state[:, 0], sc.state[:, 1], sc.state[:, 2])
     ax.plot3D(sc.m_state[:, 0], sc.m_state[:, 1], sc.m_state[:, 2])
@@ -45,3 +46,5 @@ if __name__ == '__main__':
     plt.plot(sc.scm[:,0],sc.scm[:,1])
     plt.grid()
     plt.show()
+
+    print(np.shape(sc.state))
