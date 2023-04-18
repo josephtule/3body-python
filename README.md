@@ -82,7 +82,8 @@ We add $u_{1:3}$ here to imply a thrust control on the satellite.
 ### RK45
 
 ## Optimial Transfer Trajectory
-### Cost Function(al)
+### Objective Function
+
 ### Constraints
 - System Dyanmics
 - Path Constraints
