@@ -213,10 +213,10 @@ class spacecraft:
         m.Equation(J.dt()**2 == ((ux**2+uy**2+uz**2)))
         # Objective Function
         m.Minimize(J*final + tf*final)
-        m.options.IMODE = 6
+        m.options.IMODE = 6 # Simultaneous Control
         m.options.MAX_ITER = 100
-        m.options.NODES = 9
-        m.options.SOLVER = 3
+        m.options.NODES = 4
+        m.options.SOLVER = 3 # IPOPT
 
         m.solve()
 
