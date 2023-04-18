@@ -147,7 +147,7 @@ class spacecraft:
 
         m.time = np.linspace(
             self.config['tspan'][0], self.config['tspan'][1], self.N)
-        tf = m.FV()
+        tf = m.MV()
 
         # state variables
         xs = m.CV(value=self.config['state0'][0])
@@ -195,20 +195,21 @@ class spacecraft:
         final = m.Param(value=final)
 
         # Inequality Constraints
-        # m.Equation(((xs**2+ys**2+zs**2)**0.5) > earth['radius'])
-        # m.Equation((((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)**0.5) > moon['radius'])
-        # m.Equation(umag <= 5)
+        m.Equation(((xs**2+ys**2+zs**2)**0.5) > earth['radius'])
+        m.Equation((((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)**0.5) > moon['radius'])
+        # m.Equation(((ux**2+uy**2+uz**2)) <= 5)
 
         # Equality Constraints
-        # m.Equation((((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)**0.5) * final == self.config['final_moon_radius'])
-        # m.Equation(((xs-xm)*(vxs-vxm)*final)+((ys-ym)*(vys-vym)*final) +
-        #            ((zs-zm)*(vzs-vzm)*final) == 0)
+        m.Equation((((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)**0.5)
+                   * final == self.config['final_moon_radius'])
+        m.Equation(((xs-xm)*(vxs-vxm)*final)+((ys-ym)*(vys-vym)*final) +
+                   ((zs-zm)*(vzs-vzm)*final) == 0)
 
         # Objective Function
         m.Minimize(((ux**2+uy**2+uz**2)) + tf*final)
         m.options.IMODE = 6
-        m.options.MAX_ITER = 50
-        m.options.NODES = 4
+        m.options.MAX_ITER = 100
+        m.options.NODES = 9
         m.options.SOLVER = 3
 
         m.solve()
