@@ -201,15 +201,19 @@ class spacecraft:
         # m.Equation(umag <= (10)^2)
 
         # Equality Constraints (Boundary conditions) CHANGE TO SOFT CONSTRAINTS
-        m.Equation((((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)**0.5)
-                   * final == self.config['final_moon_radius'])
-        m.Equation(((xs-xm)*(vxs-vxm)*final)+((ys-ym)*(vys-vym)*final) +
-                   ((zs-zm)*(vzs-vzm)*final) == 0)
-
+        # m.Equation((((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)**0.5)
+        #           * final == self.config['final_moon_radius'])
+        # m.Equation(((xs-xm)*(vxs-vxm)*final)+((ys-ym)*(vys-vym)*final) +
+        #           ((zs-zm)*(vzs-vzm)*final) == 0)
+        m.Minimize((((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)**0.5)
+                   * final - self.config['final_moon_radius'])
+        m.Minimize(((xs-xm)*(vxs-vxm)*final)+((ys-ym)*(vys-vym)*final) +
+                   ((zs-zm)*(vzs-vzm)*final))
         
+        
+        # Objective Function
         J = m.Var(value = 0)
         m.Equation(J.dt()**2 == ((ux**2+uy**2+uz**2)))
-        # Objective Function
         m.Minimize(J*final + tf*final)
         m.options.IMODE = 6 # Simultaneous Control
         m.options.MAX_ITER = 100
@@ -221,6 +225,7 @@ class spacecraft:
         plt.plot(ux.value)
         plt.title('cool')
         plt.show()
-        
+        # self.opt_state = np.array([xs.value,ys.value,zs.value,vxs.value,vys.value,vzs.value])
+        # self.opt_control = np.array([ux.value,uy.value,uz.value])
         # reference: https://stackoverflow.com/questions/75285363/infeasibilities-solution-not-found-gekko-error
         return m
