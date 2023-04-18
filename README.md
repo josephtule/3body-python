@@ -71,8 +71,10 @@ $$
 We add $u_{1:3}$ here to imply a thrust control on the satellite.
 
 ## Perturbations
-
+In the generation of the optimimal trajectory, perturbations will be ignored, but in the optimal control problem, external perturnbations will be included in order to work the controller. In this project, only gravitational perturbations and aerodynamic perturbations will be considered. 
 ### Gravitational
+Gravitational perturbations come in the form of 3rd body forces (in a 2 body problem) and the geometry of the planetary bodies that a spacecraft may be orbiting.
+3rd body forces will be generated through the dynamics of the system. The geometric perturbations will be represented by the $J_i$ perturbations, especially $J_2$ as the other coefficients will have much less of an effect on the spacecraft. 
 ### Aerodynamic
 ### 
 
