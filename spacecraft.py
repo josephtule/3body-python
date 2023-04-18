@@ -221,4 +221,6 @@ class spacecraft:
         plt.plot(ux.value)
         plt.title('cool')
         plt.show()
+        
+        # reference: https://stackoverflow.com/questions/75285363/infeasibilities-solution-not-found-gekko-error
         return m
