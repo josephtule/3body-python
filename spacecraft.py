@@ -205,10 +205,9 @@ class spacecraft:
         #           * final == self.config['final_moon_radius'])
         # m.Equation(((xs-xm)*(vxs-vxm)*final)+((ys-ym)*(vys-vym)*final) +
         #           ((zs-zm)*(vzs-vzm)*final) == 0)
-        m.Minimize((((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)**0.5)
-                   * final - self.config['final_moon_radius'])
-        m.Minimize(((xs-xm)*(vxs-vxm)*final)+((ys-ym)*(vys-vym)*final) +
-                   ((zs-zm)*(vzs-vzm)*final))
+        m.Minimize((((xs-xm)**2+(ys-ym)**2+(zs-zm)**2))
+                   * final - self.config['final_moon_radius']**2)
+        m.Minimize(((xs-xm)*(vxs-vxm)+(ys-ym)*(vys-vym)+(zs-zm)*(vzs-vzm))*final)
         
         
         # Objective Function
