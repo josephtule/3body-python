@@ -200,7 +200,7 @@ class spacecraft:
         m.Equation((((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)**0.5) > moon['radius'])
         # m.Equation(umag <= (10)^2)
 
-        # Equality Constraints
+        # Equality Constraints (Boundary conditions) CHANGE TO SOFT CONSTRAINTS
         m.Equation((((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)**0.5)
                    * final == self.config['final_moon_radius'])
         m.Equation(((xs-xm)*(vxs-vxm)*final)+((ys-ym)*(vys-vym)*final) +
