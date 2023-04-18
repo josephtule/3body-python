@@ -208,8 +208,11 @@ class spacecraft:
         m.Equation(((xs-xm)*(vxs-vxm)*final)+((ys-ym)*(vys-vym)*final) +
                    ((zs-zm)*(vzs-vzm)*final) == 0)
 
+        
+        J = m.Var(value = 0)
+        m.Equation(J.dt()**2 == ((ux**2+uy**2+uz**2)))
         # Objective Function
-        m.Minimize(((ux**2+uy**2+uz**2)) + tf*final)
+        m.Minimize(J*final + tf*final)
         m.options.IMODE = 6
         m.options.MAX_ITER = 100
         m.options.NODES = 9
