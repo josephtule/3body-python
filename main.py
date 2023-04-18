@@ -20,13 +20,14 @@ if __name__ == '__main__':
     }
 
     earthalt = 250
-    sc_v = np.sqrt(earth['mu'] * (2 / (earth['radius'] + earthalt) - 1/(earth['radius'] + earthalt)))
+    sc_v = np.sqrt(earth['mu'] * (2 / (earth['radius'] +
+                   earthalt) - 1/(earth['radius'] + earthalt)))
     config_hardlaunch = {
         'state0': np.array([0, -(earth['radius'] + earthalt), 0, sc_v*np.sqrt(2)*.99, 0, 0]),
         'm_state0': np.array([moon['radius_earth'], 0, 0, 0, m_vc, 0]),
         'tspan': [0, 60*60*24*30],
-        'N': 10000,
-        'propagate': 1,
+        'N': 5000,
+        'propagate': 0,
         'final_moon_radius': moon['radius'] + 100,
         'gen_opt': 1,
     }
@@ -45,8 +46,6 @@ if __name__ == '__main__':
     plt.show()
 
     plt.figure(2)
-    plt.plot(sc.scm[:,0],sc.scm[:,1])
+    plt.plot(sc.scm[:, 0], sc.scm[:, 1])
     plt.grid()
     plt.show()
-
-
