@@ -2,7 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from planets import earth, moon
 import scipy as sp
+from scipy import optimize as opt
 import sys
+from gekko import GEKKO
 
 global pi
 pi = 3.14159
@@ -46,12 +48,12 @@ class spacecraft:
                       self.config['tspan'][0])/self.dt + 1
             self.N = int(self.N)
         elif self.N:
-            self.dt = (self.config['tspan'][1] - self.config['tspan'][0])/self.N
+            self.dt = (self.config['tspan'][1] -
+                       self.config['tspan'][0])/self.N
             # print(self.dt)
         else:
             print("Error - no step size or step count specified")
             sys.exit()
-
 
         self.state = np.zeros([self.N, len(self.config['state0'])])
         self.m_state = np.zeros([self.N, len(self.config['m_state0'])])
@@ -60,21 +62,29 @@ class spacecraft:
         self.scm = np.zeros([self.N, len(self.config['state0'])])
         self.scm[0, :] = self.config['state0'] - self.config['m_state0']
 
-            # if self.config['coes']:
-            #     pass
-            #     # calculate states
-            # elif self.config['state0']:
-            #     pass
-            #     # calculate coes
+        # if self.config['coes']:
+        #     pass
+        #     # calculate states
+        # elif self.config['state0']:
+        #     pass
+        #     # calculate coes
 
         self.prop_moon()
-        
+
         if self.config['propagate']:
             self.prop_sc()
 
+        self.t = np.zeros([self.N, 1])
+        self.t[:, 0] = np.linspace(
+            self.config['tspan'][0], self.config['tspan'][1], self.N)
+        if self.config['gen_opt']:
+            self.control = np.zeros([self.N, 3])
+            self.opt_traj = self.optimize_trajectory()
+
     def prop_moon(self):
         for i in range(self.N-1):
-            self.m_state[i+1, :] = self.rk45(self.m_eoms, self.m_state[i, :], i)
+            self.m_state[i+1,
+                         :] = self.rk45(self.m_eoms, self.m_state[i, :], i)
 
     def prop_sc(self):
         for i in range(self.N-1):
@@ -114,7 +124,7 @@ class spacecraft:
         k4 = self.dt * f(x+k3, i)
         return x + 1/6 * (k1 + 2*k2 + 2*k3 + k4)
 
-    def rk45(self,f,x, i):
+    def rk45(self, f, x, i):
         B = np.array([[0, 0, 0, 0, 0],
                      [2/9, 0, 0, 0, 0],
                      [1/12, 1/4, 0, 0, 0],
@@ -122,10 +132,68 @@ class spacecraft:
                      [-17/12, 27/4, -27/5, 16/15, 0],
                      [65/432, -5/16, 13/16, 4/27, 5/144]])
         CH = np.array([47/450, 0, 12/25, 32/225, 1/30, 6/25])
-        k1 = self.dt * f(x,i)
-        k2 = self.dt * f(x+B[1,0]*k1,i)
-        k3 = self.dt * f(x + B[2,0]*k1 + B[2,1]*k2,i)
-        k4 = self.dt * f(x + B[3,0]*k1 + B[3,1]*k2 + B[3,2]*k3,i)
-        k5 = self.dt * f(x + B[4,0]*k1 + B[4,1]*k2 + B[4,2]*k3 + B[4,3]*k4,i)
-        k6 = self.dt * f(x + B[5,0]*k1 + B[5,1]*k2 + B[5,2]*k3 + B[5,3]*k4 + B[5,4]*k5,i)
+        k1 = self.dt * f(x, i)
+        k2 = self.dt * f(x+B[1, 0]*k1, i)
+        k3 = self.dt * f(x + B[2, 0]*k1 + B[2, 1]*k2, i)
+        k4 = self.dt * f(x + B[3, 0]*k1 + B[3, 1]*k2 + B[3, 2]*k3, i)
+        k5 = self.dt * f(x + B[4, 0]*k1 + B[4, 1]*k2 +
+                         B[4, 2]*k3 + B[4, 3]*k4, i)
+        k6 = self.dt * f(x + B[5, 0]*k1 + B[5, 1]*k2 +
+                         B[5, 2]*k3 + B[5, 3]*k4 + B[5, 4]*k5, i)
         return x + CH[0]*k1 + CH[1]*k2 + CH[2]*k3 + CH[3]*k4 + CH[4]*k5 + CH[5]*k6
+
+    def syseoms(self, x, u, t):
+        dxdt = np.zeros([12])
+        dxdt[0:6] = x[0:6]
+
+        egrav = - x[0:3] * earth['mu'] / np.linalg.norm(x[0:3])**3
+        mgrav = - (x[0:3] - x[3:6]) * moon['mu'] / \
+            np.linalg.norm(x[0:3] - x[3:6])**3
+        dxdt[6:9] = egrav + mgrav + u
+        dxdt[9:12] = - x[3:6] * earth['mu'] / np.linalg.norm(x[3:6])**3
+        return dxdt
+
+    def obj_fun(self, x, u, t):
+        J = 0
+        for k in range(self.N):
+            h = t[k+1] - t[k]
+            J = J + (h / 2) * ((t[k]**2 + np.linalg.norm(x[k, :])**2 + np.linalg.norm(u[k, :])**2) + (
+                t[k+1]**2 + np.linalg.norm(x[k+1, :])**2 + np.linalg.norm(u[k+1, :])**2))
+        return J
+
+    # def optimize_trajectory(self):
+    #     # initial guesses
+    #     init_state = np.concatenate((self.state,self.m_state),axis=1)
+    #     init_control = np.array(self.control)
+    #     init_time = np.array(self.t)
+    #     print(np.shape(init_state),np.shape(init_control),np.shape(init_time))
+
+    #     xinit = np.concatenate((init_state,init_control,init_time),axis=1)
+    #     print(np.shape([xinit]))
+
+    #     cons = (
+    #         {'type': 'eq', 'fun': lambda x:  x[k+1, 0:3] - x[k, 0:3] - (t[k+1] - t[k])/2 * (
+    #             self.syseoms(x[k, :], u[k, :], t[k]) + self.syseoms(x[k+1, :], u[k+1, :], t[k+1]))},
+    #         # {'type': 'eq', 'fun': lambda x: (np.linalg.norm(
+    #         #     x[self.N, 0:3] - x[self.N, 3:6]) - self.config['final_moon_radius'])},  # g1
+    #         # # g2
+    #         # {'type': 'eq', 'fun': lambda x: np.dot(x[self.N, 0:3]-x[self.N, 3:6], x[self.N, 6:9]-x[self.N,9:12])},
+    #         # {'type': 'eq', 'fun': lambda x: x[0, :] - np.concatenate(self.config['state0'], self.config['m_state0'])},  # x[0] = x0
+    #         # {'type': 'ineq', 'fun': lambda x, u, t, k: 1},
+    #         # {'type': 'ineq', 'fun': lambda x, u, t, k: 1},
+    #         # {'type': 'ineq', 'fun': lambda x, u, t, k: 1},
+    #         # {'type': 'ineq', 'fun': lambda x, u, t, k: 1}
+    #     )
+    #     res = opt.minimize(lambda x: self.obj_fun(x), xinit, method='SLSQP', constraints=cons)
+    #     return 0
+
+    def optimize_trajectory(self):
+        m = GEKKO()
+
+        m.time = np.linspace(0, 1, self.N)
+
+        m.options.IMODE = 6
+        m.options.MAX_ITER = 500
+        
+
+

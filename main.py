@@ -27,6 +27,8 @@ if __name__ == '__main__':
         'tspan': [0, 60*60*24*30],
         'N': 10000,
         'propagate': 1,
+        'final_moon_radius': moon['radius'] + 100,
+        'gen_opt': 1,
     }
 
     plt.figure(1)
@@ -47,4 +49,4 @@ if __name__ == '__main__':
     plt.grid()
     plt.show()
 
-    print(np.shape(sc.state))
+
