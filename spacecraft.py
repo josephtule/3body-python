@@ -166,6 +166,9 @@ class spacecraft:
         ux = m.MV()
         uy = m.MV()
         uz = m.MV()
+        ux.STATUS = 1
+        uy.STATUS = 1
+        uz.STATUS = 1
         # intermediate variables
         # Rs = m.Intermediate((xs**2+ys**2+zs**2)**0.5)
         # Rm = m.Intermediate((xm**2+ym**2+zm**2)**0.5)
