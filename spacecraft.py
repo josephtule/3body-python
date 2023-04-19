@@ -142,89 +142,85 @@ class spacecraft:
                          B[5, 2]*k3 + B[5, 3]*k4 + B[5, 4]*k5, i)
         return x + CH[0]*k1 + CH[1]*k2 + CH[2]*k3 + CH[3]*k4 + CH[4]*k5 + CH[5]*k6
 
+    
+    # reference: https://stackoverflow.com/questions/75285363/infeasibilities-solution-not-found-gekko-error
     def optimize_trajectory(self):
-        m = GEKKO(remote=True)
+        m = GEKKO(remote=False)
 
-        m.time = np.linspace(
-            self.config['tspan'][0], self.config['tspan'][1], self.N)
-        tf = m.MV()
+        m.time = np.linspace(self.config['tspan'][0], self.config['tspan'][1]*2, self.N-1)
+        mu_E = m.Param(value=earth['mu'])
+        mu_M = m.Param(value=moon['mu'])
 
-        # state variables
-        xs = m.CV(value=self.config['state0'][0])
-        ys = m.CV(value=self.config['state0'][1])
-        zs = m.CV(value=self.config['state0'][2])
-        vxs = m.CV(value=self.config['state0'][3])
-        vys = m.CV(value=self.config['state0'][4])
-        vzs = m.CV(value=self.config['state0'][5])
+
+        # State Variables
+        xs = m.Var(value=self.config['state0'][0])
+        ys = m.Var(value=self.config['state0'][1])
+        zs = m.Var(value=self.config['state0'][2])
+        vxs = m.Var(value=self.config['state0'][3])
+        vys = m.Var(value=self.config['state0'][4])
+        vzs = m.Var(value=self.config['state0'][5])
         xm = m.Var(value=self.config['m_state0'][0])
         ym = m.Var(value=self.config['m_state0'][1])
         zm = m.Var(value=self.config['m_state0'][2])
         vxm = m.Var(value=self.config['m_state0'][3])
         vym = m.Var(value=self.config['m_state0'][4])
         vzm = m.Var(value=self.config['m_state0'][5])
-        # control variables
-        ux = m.MV()
-        uy = m.MV()
-        uz = m.MV()
+        
+        # Time and Control Variables (Manipulated)
+        umax = 1000
+        ux = m.MV(value=0,lb=-umax,ub=umax)
+        uy = m.MV(value=0,lb=-umax,ub=umax)
+        uz = m.MV(value=0,lb=-umax,ub=umax)
+        tf = m.MV(value=0)
         ux.STATUS = 1
         uy.STATUS = 1
         uz.STATUS = 1
-        # intermediate variables
-        Rs = m.Intermediate((xs**2+ys**2+zs**2)**0.5)
-        Rm = m.Intermediate((xm**2+ym**2+zm**2)**0.5)
-        Rms = m.Intermediate(((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)**0.5)
-        umag = m.Intermediate((ux**2+uy**2+uz**2))
+        tf.STATUS = 1
 
-        # EOMS
-        m.Equations((xs.dt() == vxs, ys.dt() == vys, zs.dt() == vzs,))
-        m.Equations((
-            vxs.dt() == ux - earth['mu'] / Rs**3 * xs -
-            moon['mu'] / Rms**3 * (xs-xm),
-            vys.dt() == uy - earth['mu'] / Rs**3 * ys -
-            moon['mu'] / Rms**3 * (ys-ym),
-            vzs.dt() == uz - earth['mu'] / Rs**3 * zs -
-            moon['mu'] / Rms**3 * (zs-zm)
-        ))
-        m.Equations((xm.dt() == vxm, ym.dt() == vym, zm.dt() == vzm,))
-        m.Equations(
-            (vxm.dt() == - earth['mu'] / Rm**3 * xm,
-             vym.dt() == - earth['mu'] / Rm**3 * ym,
-             vzm.dt() == - earth['mu'] / Rm**3 * zm))
+        # Intermediate Variables
+        U = m.Intermediate(ux**2 + uy**2 + uz**2)
+        Rs = m.Intermediate(xs**2 + ys**2 + zs**2)
+        Rm = m.Intermediate(xm**2 + ym**2 + zm**2)
+        Rms = m.Intermediate((xs-xm)**2 + (ys-ym)**2 + (zs-zm)**2)
+        Vs = m.Intermediate(vxs**2 + vys**2 + vzs**2)
+        Vm = m.Intermediate(vxm**2 + vym**2 + vzm**2)
+        Vms = m.Intermediate((vxs-vxm)**2 + (vys-vym)**2 + (vzs-vzm)**2)
 
-        final = np.zeros_like(m.time)
-        final[-1] = 1.0
-        final = m.Param(value=final)
+        axs = m.Intermediate(ux - mu_E / Rs**(3/2) * xs - mu_M / Rm**(3/2) * (xs-xm))
+        ays = m.Intermediate(uy - mu_E / Rs**(3/2) * ys - mu_M / Rm**(3/2) * (ys-ym))
+        azs = m.Intermediate(uz - mu_E / Rs**(3/2) * zs - mu_M / Rm**(3/2) * (ys-ym)) 
+        axm = m.Intermediate(- mu_E / Rm**(3/2) * xm)
+        aym = m.Intermediate(- mu_E / Rm**(3/2) * ym)
+        azm = m.Intermediate(- mu_E / Rm**(3/2) * zm) 
 
-        # Inequality Constraints
-        m.Equation(((xs**2+ys**2+zs**2)**0.5) > earth['radius'])
-        m.Equation((((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)**0.5) > moon['radius'])
-        # m.Equation(umag <= (10)^2)
+        # EOMs
+        # spacecraft
+        m.Equations((vxs.dt() == axs, vys.dt() == ays, vzs.dt() == azs))
+        m.Equations((xs.dt() == vxs, ys.dt() == vys, zs.dt() == vzs))
+        # moon
+        m.Equations((vxm.dt() == axm, vym.dt() == aym, vzm.dt() == azm))
+        m.Equations((xm.dt() ==  vxm, ym.dt() ==  vym, zm.dt() == vzm))
 
-        # Equality Constraints (Boundary conditions) CHANGE TO SOFT CONSTRAINTS
-        # m.Equation((((xs-xm)**2+(ys-ym)**2+(zs-zm)**2)**0.5)
-        #           * final == self.config['final_moon_radius'])
-        # m.Equation(((xs-xm)*(vxs-vxm)*final)+((ys-ym)*(vys-vym)*final) +
-        #           ((zs-zm)*(vzs-vzm)*final) == 0)
-        m.Minimize((((xs-xm)**2+(ys-ym)**2+(zs-zm)**2))
-                   * final - self.config['final_moon_radius']**2)
-        m.Minimize(((xs-xm)*(vxs-vxm)+(ys-ym)*(vys-vym)+(zs-zm)*(vzs-vzm))*final)
-        
-        
+
+        p = np.zeros(self.N-1) # mask final time point
+        p[-1] = 500
+        final = m.Param(value=p)
+        # Boundary Constraints
+        Rc_f = m.MV(lb=moon['radius']+100,ub=moon['radius']+20000)
+
         # Objective Function
         J = m.Var(value = 0)
-        m.Equation(J.dt()**2 == ((ux**2+uy**2+uz**2)))
-        m.Minimize(J*final + tf*final)
-        m.options.IMODE = 6 # Simultaneous Control
-        m.options.MAX_ITER = 100
-        m.options.NODES = 4
+        m.Equation(J.dt() == m.abs2(U**(1/2)))
+        m.Minimize(J*final)
+        # m.Minimize(Vms**.5*final) # minimize the speed wrt moon
+        # m.Minimize(m.abs(tf)*final)
+        m.Minimize(Rms*final) # final distance M-S distance 
+
+
+        # Solver Settings 
+        m.options.IMODE = 6 # simultaneous control dynamic optimizer
+        m.options.MAX_ITER = 1000
+        m.options.NODES = 2
         m.options.SOLVER = 3 # IPOPT
-
-        m.solve()
-
-        plt.plot(ux.value)
-        plt.title('cool')
-        plt.show()
-        # self.opt_state = np.array([xs.value,ys.value,zs.value,vxs.value,vys.value,vzs.value])
-        # self.opt_control = np.array([ux.value,uy.value,uz.value])
-        # reference: https://stackoverflow.com/questions/75285363/infeasibilities-solution-not-found-gekko-error
-        return m
+        m.open_folder()
+        m.solve(disp=True)

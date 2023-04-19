@@ -5,7 +5,7 @@ from gekko import GEKKO
 
 # create GEKKO model
 m = GEKKO(remote=False)
-print(m.path)
+m.open_folder()
 nt = 101
 m.time = np.linspace(0,500,nt)
 
@@ -48,12 +48,8 @@ vz2 =  m.Var(value = v3_t)
 J =  m.Var(value = 0)
 
 # Manipulated Variable
-Ux = m.MV(value=0, lb=-0.00, ub=0.001)
-Ux.STATUS = 1
-Uy = m.MV(value=0, lb=-0.00, ub=0.001)
-Uy.STATUS = 1
-Uz = m.MV(value=0, lb=-0.00, ub=0.001)
-Uz.STATUS = 1
+U = m.MV(value=0, lb=-0.01, ub=0.01)
+U.STATUS = 1
 
 # Mask time
 p = np.zeros(nt) # mask final time point
@@ -70,9 +66,9 @@ mu_t = m.Const(3.9860064*10**(5))   # [km^3/s^2]
 Rc = m.Intermediate((x**2 + y**2 + z**2)**0.5)
 v = m.Intermediate((vx**2 + vy**2 + vz**2)**0.5)
 
-ax = m.Intermediate(x * -mu_t / Rc**3 + Ux )
-ay = m.Intermediate(y * -mu_t / Rc**3 + Uy )
-az = m.Intermediate(z * -mu_t / Rc**3 + Uz )
+ax = m.Intermediate(x * -mu_t / Rc**3 + U *vx / v )
+ay = m.Intermediate(y * -mu_t / Rc**3 + U *vy / v )
+az = m.Intermediate(z * -mu_t / Rc**3 + U *vz / v )
 
 # Define intermediate quantities - Target
 Rt = m.Intermediate((x2**2 + y2**2 + z2**2)**0.5)
@@ -89,30 +85,30 @@ m.Equations((x.dt() == vx, y.dt() == vy, z.dt() == vz))
 
 m.Equations((vx2.dt() == ax2, vy2.dt() == ay2, vz2.dt() == az2))
 m.Equations((x2.dt() ==  vx2, y2.dt() ==  vy2, z2.dt() == vz2))
-umag = m.Intermediate(Ux**2 + Uy**2 + Uz**2)
+
 # Equation relating thrust to fuel usage
 #m.Equation(J.dt() == m.abs2(U))
-m.Equation(J.dt()**2 == umag)
+m.Equation(J.dt()**2 == U**2)
 
 
 # Path Constraints
 
 # specify endpoint conditions
 # soft constraints
-m.Minimize(final*(v-v2)**2)
-m.Minimize(final*(x-x2)**2)
-m.Minimize(final*(y-y2)**2)
-m.Minimize(final*(z-z2)**2)
-m.Minimize(final*(vx-vx2)**2)
-m.Minimize(final*(vy-vy2)**2)
-m.Minimize(final*(vz-vz2)**2)    
+# m.Minimize(final*(v-v2)**2)
+# m.Minimize(final*(x-x2)**2)
+# m.Minimize(final*(y-y2)**2)
+# m.Minimize(final*(z-z2)**2)
+# m.Minimize(final*(vx-vx2)**2)
+# m.Minimize(final*(vy-vy2)**2)
+# m.Minimize(final*(vz-vz2)**2)    
 
 # Constraints 
 # m.abs2(Rc - RT) > 200
 # m.abs2(Rc - RT) < 1000
 # m.abs2(Rc*final - Rt*final) == 0
 RcRT = m.Var(lb=200,ub=1000)
-m.Equation(RcRT**2 == (Rc-RT)**2)
+m.Minimize(RcRT**2 - (Rc-RT)**2)
 
 # Objective, minimizing fuel usage
 m.Minimize(J * final)

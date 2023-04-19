@@ -8,7 +8,7 @@ G = 6.6743e-20
 
 
 if __name__ == '__main__':
-    moonalt = 500
+    moonalt = 10000
     m_vc = np.sqrt(earth['mu'] / (moon['radius_earth']))
     sc_vc_moon = np.sqrt(moon['mu'] / (moon['radius']+moonalt)) + m_vc
 
@@ -16,24 +16,30 @@ if __name__ == '__main__':
         'state0': np.array([moon['radius_earth']+moon['radius']+moonalt, 0, 0, 0, sc_vc_moon, 0]),
         'm_state0': np.array([moon['radius_earth'], 0, 0, 0, m_vc, 0]),
         'tspan': [0, 60*60*24*30],
-        'dt': 100
+        'dt': 1000,
+        'propagate': 0,
+        'gen_opt':1,
     }
 
-    earthalt = 250
+    earthalt = 300000
     sc_v = np.sqrt(earth['mu'] * (2 / (earth['radius'] +
                    earthalt) - 1/(earth['radius'] + earthalt)))
     config_hardlaunch = {
-        'state0': np.array([0, -(earth['radius'] + earthalt), 0, sc_v*np.sqrt(2), 0, 0]),
+        'state0': np.array([(earth['radius'] + earthalt), 0, 0, 0, sc_v, 0]),
         'm_state0': np.array([moon['radius_earth'], 0, 0, 0, m_vc, 0]),
-        'tspan': [0, 60*60*24*30],
-        'N': 100,
+        'tspan': [0, 60*60*24*15],
+        'N': 1000,
         'propagate': 0,
         'final_moon_radius': moon['radius'] + 100,
         'gen_opt': 1,
     }
 
+
+
+
+
     plt.figure(1)
-    sc = SC(config_hardlaunch)
+    sc = SC(config_moonorbit)
     ax = plt.axes(projection='3d')
     ax.plot3D(sc.state[:, 0], sc.state[:, 1], sc.state[:, 2])
     ax.plot3D(sc.m_state[:, 0], sc.m_state[:, 1], sc.m_state[:, 2])
@@ -43,7 +49,6 @@ if __name__ == '__main__':
     # limits to see satellite
     # plt.xlim([-earth['radius']+1000,earth['radius']+1000])
     # plt.ylim([-earth['radius']+1000,earth['radius']+1000])
-    plt.show()
 
     plt.figure(2)
     plt.plot(sc.scm[:, 0], sc.scm[:, 1])
