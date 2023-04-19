@@ -1,8 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from planets import earth, moon
-import scipy as sp
-from scipy import optimize as opt
 import sys
 from gekko import GEKKO
 
@@ -26,16 +24,15 @@ def default_config():
 
 def default_body(type):
     if type:
-        body = {'state0': np.array([]),
+        body = { # default satellite config
+                'state0': np.array([]),
                 'coes0': np.array([]),  # [a,e,i,AOP,RAAN,TA]
                 'propagate': 1,
-                'specs': {
-                    'mass': 500,  # kg
-                    'Cd': 2.2,
-        },
+                'mass': 500,  # kg
+                'Cd': 2.2,
         }
     else:
-        body = {
+        body = { # default planet config
             'name': 'earth',
             'mass': 5.97219e24,  # kg
             'mu': 0.3986004418e6,  # km^3/s^2
@@ -47,13 +44,15 @@ def default_body(type):
 
 class body:
 
-    def __init__(self, config, sat=0, planet=0):
+    def __init__(self, config, sat=0, planet=0,cb=0):
         if sat == 1:
             self.config = default_body(1)
-            self.config['cb'] = 0
         elif planet == 1:
             self.config = default_body(0)
-            self.config['cb'] = 1
+
+        self.cb = cb
+        self.sat = sat
+        self.planet = planet
 
         for key in config.keys():
             # overwrite defaults, add additional config
@@ -87,38 +86,44 @@ class orbitsys:
             sys.exit()
 
         self.bodies = bodies
+        self.planets = []
+        for body in bodies: # place cb and non-cb planets into external data structures
+            if body.planet == 1 and body.cb == 1:
+                self.cb = body
+                self.bodies.remove(body)
+            elif body.planet == 1 and body.cb == 0:
+                self.planets.append(body)
+                self.bodies.remove(body)
 
-        self.state = np.zeros([self.N, len(self.config['state0'])])
-        self.m_state = np.zeros([self.N, len(self.config['m_state0'])])
-        self.state[0, :] = self.config['state0']
-        self.m_state[0, :] = self.config['m_state0']
-        self.scm = np.zeros([self.N, len(self.config['state0'])])
-        self.scm[0, :] = self.config['state0'] - self.config['m_state0']
+        for body in bodies: # place cb and non-cb planets into external data structures
+            if body.planet == 1 and body.cb == 0:
+                self.planets.append(body)
+                self.bodies.remove(body)
+        
+        self.prop_planets()
+        self.prop_sats()
 
-        if self.config['propagate']:
-            self.prop_sc()
 
-        self.t = np.zeros([self.N, 1])
-        self.t[:, 0] = np.linspace(
-            self.config['tspan'][0], self.config['tspan'][1], self.N)
-        if self.config['gen_opt']:
-            self.control = np.zeros([self.N, 3])
-            self.opt_traj = self.optimize_trajectory()
 
-    def prop_moon(self):
+    def prop_planets(self):
+        for planet in self.planets:
+            planet.state = np.zeros([self.N,len(planet.config['state0'])])
+            planet.state[0,:] = planet.config['state0']
+
         for i in range(self.N-1):
-            self.m_state[i+1,
-                         :] = self.rk45(self.m_eoms, self.m_state[i, :], i)
+            for planet in self.planets:
+                planet.state[i+1,:] = self.rk45(self.planet_eoms,planet.state[i,:],i)
 
-    def prop_sc(self):
+    def prop_sats(self):
+        for body in self.bodies:
+            body.state = np.zeros([self.N,len(body.config['state0'])])
+            body.state[0,:] = body.config['state0']
         for i in range(self.N-1):
-            self.state[i+1, :] = self.rk45(self.sc_eoms, self.state[i, :], i)
-            self.scm[i+1, :] = self.state[i+1, :] - self.m_state[i+1, :]
+            for body in self.bodies:
+                body.state[i+1, :] = self.rk45(self.sat_eoms, body.state[i, :], i)
 
-    def sc_eoms(self, state, i):
-        r_EM = np.zeros([3])
-        r_EM = self.m_state[i, 0:3]
-        # sc eom wrt to earth
+    def sat_eoms(self, state, i):
+        # sc eom wrt to cb
         r = np.zeros([3])
         v = np.zeros([3])
         r = state[0:3]
@@ -126,20 +131,31 @@ class orbitsys:
         dxdt = np.zeros([6])
         dxdt[0:3] = v
 
-        egrav = - r * earth['mu'] / np.linalg.norm(r)**3
-        perts = - (r - r_EM) * moon['mu'] / np.linalg.norm(r - r_EM)**3
-        dxdt[3:6] = egrav + perts
+        cbgrav = - r * self.cb.config['mu'] / np.linalg.norm(r)**3
+        perts = 0
+        for planet in self.planets:
+            r_co = state[0:3] - planet.state[i-1,0:3]
+            perts += - planet.config['mu'] / np.linalg.norm(r_co)**3 * r_co
+        dxdt[3:6] = cbgrav + perts # + perts
         return dxdt
 
-    def m_eoms(self, m_state, i):
-        r_EM = np.zeros([3])
-        v_EM = np.zeros([3])
-        r_EM = m_state[0:3]
-        v_EM = m_state[3:6]
-        dxmdt = np.zeros([6])
-        dxmdt[0:3] = v_EM
-        dxmdt[3:6] = - r_EM * earth['mu'] / np.linalg.norm(r_EM)**3
-        return dxmdt
+    def planet_eoms(self, state, i):
+        perts = 0
+        for planet in self.planets:
+            r_co = state[0:3] - planet.state[i,0:3] # shold equal zero when current body = planet, isn't for some reason, close enough
+            # print(np.linalg.norm(r_co[0]))
+            if np.linalg.norm(r_co) > planet.config['radius']: # only calculate perturbation if house is cool
+                perts += - planet.config['mu'] / np.linalg.norm(r_co)**3 * r_co
+
+        r_cb_planet = np.zeros([3])
+        v_cb_planet = np.zeros([3])
+        r_cb_planet = state[0:3]
+        v_cb_planet = state[3:6]
+        dxdt = np.zeros([6])
+        dxdt[0:3] = v_cb_planet
+        dxdt[3:6] = - r_cb_planet * self.cb.config['mu'] / np.linalg.norm(r_cb_planet)**3 + perts
+
+        return dxdt
 
     def rk4(self, f, x, i):
         k1 = self.dt * f(x, i)
