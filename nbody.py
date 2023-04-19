@@ -14,30 +14,62 @@ G = 6.6743e-20  # km^3/kg/s^2
 
 def default_config():
     config = {
-        'state0': np.array([]),
-        'm_state0': np.array([]),
-        'moon_prop': 1,
-        'coes': [],
-        'perts': [],
+        'perts': [],  # aero, j_i
         'dt': 0,
         'tspan': [0, 100],
         'N': 0,
         'propagate': 1,
         'gen_opt': 0,
-        'specs': {
-            'Cd': 2.2,
-            'area': (1e-3)**2/4,
-            'mass': 0,
-        }
     }
     return config
 
 
-class spacecraft:
+def default_body(type):
+    if type:
+        body = {'state0': np.array([]),
+                'coes0': np.array([]),  # [a,e,i,AOP,RAAN,TA]
+                'propagate': 1,
+                'specs': {
+                    'mass': 500,  # kg
+                    'Cd': 2.2,
+        },
+        }
+    else:
+        body = {
+            'name': 'earth',
+            'mass': 5.97219e24,  # kg
+            'mu': 0.3986004418e6,  # km^3/s^2
+            'radius': 6378.14,  # km
+            'j2': 1.08262668355e-3,
+        }
+    return body
 
-    def __init__(self, config):
+
+class body:
+
+    def __init__(self, config, sat=0, planet=0):
+        if sat == 1:
+            self.config = default_body(1)
+            self.config['cb'] = 0
+        elif planet == 1:
+            self.config = default_body(0)
+            self.config['cb'] = 1
+
+        for key in config.keys():
+            # overwrite defaults, add additional config
+            self.config[key] = config[key]
+
+        if not planet:
+            if any(self.config['state0']):
+                self.config['state_or_coes'] = 1
+            else:
+                self.config['state_or_coes'] = 0
+
+
+class orbitsys:
+
+    def __init__(self, config, bodies):
         self.config = default_config()
-
         for key in config.keys():
             self.config[key] = config[key]
 
@@ -50,10 +82,11 @@ class spacecraft:
         elif self.N:
             self.dt = (self.config['tspan'][1] -
                        self.config['tspan'][0])/self.N
-            # print(self.dt)
         else:
             print("Error - no step size or step count specified")
             sys.exit()
+
+        self.bodies = bodies
 
         self.state = np.zeros([self.N, len(self.config['state0'])])
         self.m_state = np.zeros([self.N, len(self.config['m_state0'])])
@@ -61,15 +94,6 @@ class spacecraft:
         self.m_state[0, :] = self.config['m_state0']
         self.scm = np.zeros([self.N, len(self.config['state0'])])
         self.scm[0, :] = self.config['state0'] - self.config['m_state0']
-
-        # if self.config['coes']:
-        #     pass
-        #     # calculate states
-        # elif self.config['state0']:
-        #     pass
-        #     # calculate coes
-
-        self.prop_moon()
 
         if self.config['propagate']:
             self.prop_sc()
@@ -103,8 +127,8 @@ class spacecraft:
         dxdt[0:3] = v
 
         egrav = - r * earth['mu'] / np.linalg.norm(r)**3
-        mgrav = - (r - r_EM) * moon['mu'] / np.linalg.norm(r - r_EM)**3
-        dxdt[3:6] = egrav + mgrav
+        perts = - (r - r_EM) * moon['mu'] / np.linalg.norm(r - r_EM)**3
+        dxdt[3:6] = egrav + perts
         return dxdt
 
     def m_eoms(self, m_state, i):
@@ -142,15 +166,15 @@ class spacecraft:
                          B[5, 2]*k3 + B[5, 3]*k4 + B[5, 4]*k5, i)
         return x + CH[0]*k1 + CH[1]*k2 + CH[2]*k3 + CH[3]*k4 + CH[4]*k5 + CH[5]*k6
 
-    
     # reference: https://stackoverflow.com/questions/75285363/infeasibilities-solution-not-found-gekko-error
+
     def optimize_trajectory(self):
         m = GEKKO(remote=False)
 
-        m.time = np.linspace(self.config['tspan'][0], self.config['tspan'][1]*2, self.N-1)
+        m.time = np.linspace(
+            self.config['tspan'][0], self.config['tspan'][1]*2, self.N-1)
         mu_E = m.Param(value=earth['mu'])
         mu_M = m.Param(value=moon['mu'])
-
 
         # State Variables
         xs = m.Var(value=self.config['state0'][0])
@@ -165,12 +189,12 @@ class spacecraft:
         vxm = m.Var(value=self.config['m_state0'][3])
         vym = m.Var(value=self.config['m_state0'][4])
         vzm = m.Var(value=self.config['m_state0'][5])
-        
+
         # Time and Control Variables (Manipulated)
         umax = 1000
-        ux = m.MV(value=0,lb=-umax,ub=umax)
-        uy = m.MV(value=0,lb=-umax,ub=umax)
-        uz = m.MV(value=0,lb=-umax,ub=umax)
+        ux = m.MV(value=0, lb=-umax, ub=umax)
+        uy = m.MV(value=0, lb=-umax, ub=umax)
+        uz = m.MV(value=0, lb=-umax, ub=umax)
         tf = m.MV(value=0)
         ux.STATUS = 1
         uy.STATUS = 1
@@ -186,12 +210,15 @@ class spacecraft:
         Vm = m.Intermediate(vxm**2 + vym**2 + vzm**2)
         Vms = m.Intermediate((vxs-vxm)**2 + (vys-vym)**2 + (vzs-vzm)**2)
 
-        axs = m.Intermediate(ux - mu_E / Rs**(3/2) * xs - mu_M / Rm**(3/2) * (xs-xm))
-        ays = m.Intermediate(uy - mu_E / Rs**(3/2) * ys - mu_M / Rm**(3/2) * (ys-ym))
-        azs = m.Intermediate(uz - mu_E / Rs**(3/2) * zs - mu_M / Rm**(3/2) * (ys-ym)) 
+        axs = m.Intermediate(ux - mu_E / Rs**(3/2) *
+                             xs - mu_M / Rm**(3/2) * (xs-xm))
+        ays = m.Intermediate(uy - mu_E / Rs**(3/2) *
+                             ys - mu_M / Rm**(3/2) * (ys-ym))
+        azs = m.Intermediate(uz - mu_E / Rs**(3/2) *
+                             zs - mu_M / Rm**(3/2) * (ys-ym))
         axm = m.Intermediate(- mu_E / Rm**(3/2) * xm)
         aym = m.Intermediate(- mu_E / Rm**(3/2) * ym)
-        azm = m.Intermediate(- mu_E / Rm**(3/2) * zm) 
+        azm = m.Intermediate(- mu_E / Rm**(3/2) * zm)
 
         # EOMs
         # spacecraft
@@ -199,28 +226,26 @@ class spacecraft:
         m.Equations((xs.dt() == vxs, ys.dt() == vys, zs.dt() == vzs))
         # moon
         m.Equations((vxm.dt() == axm, vym.dt() == aym, vzm.dt() == azm))
-        m.Equations((xm.dt() ==  vxm, ym.dt() ==  vym, zm.dt() == vzm))
+        m.Equations((xm.dt() == vxm, ym.dt() == vym, zm.dt() == vzm))
 
-
-        p = np.zeros(self.N-1) # mask final time point
+        p = np.zeros(self.N-1)  # mask final time point
         p[-1] = 500
         final = m.Param(value=p)
         # Boundary Constraints
-        Rc_f = m.MV(lb=moon['radius']+100,ub=moon['radius']+20000)
+        Rc_f = m.MV(lb=moon['radius']+100, ub=moon['radius']+20000)
 
         # Objective Function
-        J = m.Var(value = 0)
+        J = m.Var(value=0)
         m.Equation(J.dt() == m.abs2(U**(1/2)))
         m.Minimize(J*final)
         # m.Minimize(Vms**.5*final) # minimize the speed wrt moon
         # m.Minimize(m.abs(tf)*final)
-        m.Minimize(Rms*final) # final distance M-S distance 
+        m.Minimize(Rms*final)  # final distance M-S distance
 
-
-        # Solver Settings 
-        m.options.IMODE = 6 # simultaneous control dynamic optimizer
+        # Solver Settings
+        m.options.IMODE = 6  # simultaneous control dynamic optimizer
         m.options.MAX_ITER = 1000
         m.options.NODES = 2
-        m.options.SOLVER = 3 # IPOPT
+        m.options.SOLVER = 3  # IPOPT
         m.open_folder()
         m.solve(disp=True)
