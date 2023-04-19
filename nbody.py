@@ -118,9 +118,10 @@ class orbitsys:
         for body in self.bodies:
             body.state = np.zeros([self.N,len(body.config['state0'])])
             body.state[0,:] = body.config['state0']
+
         for i in range(self.N-1):
-            for body in self.bodies:
-                body.state[i+1, :] = self.rk45(self.sat_eoms, body.state[i, :], i)
+            for sat in self.bodies:
+                sat.state[i+1, :] = self.rk45(self.sat_eoms, sat.state[i, :], i)
 
     def sat_eoms(self, state, i):
         # sc eom wrt to cb
@@ -130,13 +131,15 @@ class orbitsys:
         v = state[3:6]
         dxdt = np.zeros([6])
         dxdt[0:3] = v
-
+        # print(np.linalg.norm(r-self.bodies[0].state[i,0:3]))
         cbgrav = - r * self.cb.config['mu'] / np.linalg.norm(r)**3
+
         perts = 0
         for planet in self.planets:
             r_co = state[0:3] - planet.state[i-1,0:3]
             perts += - planet.config['mu'] / np.linalg.norm(r_co)**3 * r_co
-        dxdt[3:6] = cbgrav + perts # + perts
+            
+        dxdt[3:6] = cbgrav + perts
         return dxdt
 
     def planet_eoms(self, state, i):
@@ -173,7 +176,7 @@ class orbitsys:
                      [65/432, -5/16, 13/16, 4/27, 5/144]])
         CH = np.array([47/450, 0, 12/25, 32/225, 1/30, 6/25])
         k1 = self.dt * f(x, i)
-        k2 = self.dt * f(x+B[1, 0]*k1, i)
+        k2 = self.dt * f(x + B[1, 0]*k1, i)
         k3 = self.dt * f(x + B[2, 0]*k1 + B[2, 1]*k2, i)
         k4 = self.dt * f(x + B[3, 0]*k1 + B[3, 1]*k2 + B[3, 2]*k3, i)
         k5 = self.dt * f(x + B[4, 0]*k1 + B[4, 1]*k2 +
