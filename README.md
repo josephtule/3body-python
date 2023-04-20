@@ -28,7 +28,7 @@ Where i is the ith body of interest and j is the jth external planet. This equat
 To allow for trajectory optimization, we will take to account the position of the moon at all times, this will result in size 12 state vector, with the state being:
 
 $$
-\vec{x} =  \left\lbrack \begin{array}{c}
+\vec{x}_{i} =  \left\lbrack \begin{array}{c}
 \vec{r}_{CS,i} \\
 \dot{\vec{r}}_{CS,i} \\
 \end{array}\right\rbrack = 
