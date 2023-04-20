@@ -1,4 +1,4 @@
-# 3body-python
+# nbody-python
 
 The intent of this project is to create a 3-body simulator that will eventually generate an optimal trajectory from an orbit about the Earth to an orbit about the Moon, then generate an optimal control sequence in order to stay in the reference trajectory.
 
