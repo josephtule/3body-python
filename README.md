@@ -18,7 +18,7 @@ Using an arbitrary central body (C) with an inertial reference frame as well as 
 
 $$\begin{equation}
 \ddot{\vec{r}}_{CS,i} = -\frac{\mu_{C}}{||\vec{r}_{CS,i}||^3} \vec{r}_{CS,i} - \sum_{j} \frac{\mu_{O,j}}{||\vec{r}_{OS,i,j}||^3} \vec{r}_{OS,i,j}
-= -\frac{\mu_{C}}{||\vec{r}_{CS,i}||^3} \vec{r}_{CS,i} - \frac{\mu_{O,j}}{||\vec{r}_{CS,i} - \vec{r}_{CM,j}||^3} (\vec{r}_{CS,i} - \vec{r}_{CM,j})
+= -\frac{\mu_{C}}{||\vec{r}_{CS,i}||^3} \vec{r}_{CS,i} - \frac{\mu_{O,j}}{||\vec{r}_{CS,i} - \sum_{j} \vec{r}_{CM,j}||^3} (\vec{r}_{CS,i} - \vec{r}_{CM,j})
 \end{equation}$$ 
 
 Where i is the ith body of interest and j is the jth external planet. This equation will be the governing equation for each body other than the central body (including satellites and all "planets"). Since satellites are low in mass, we will ignore their pull on the other bodies but the external planets will affect each other. 
