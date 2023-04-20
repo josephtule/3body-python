@@ -12,12 +12,13 @@ G = 6.6743e-20  # km^3/kg/s^2
 
 def default_config():
     config = {
-        'perts': [],  # aero, j_i
         'dt': 0,
         'tspan': [0, 100],
         'N': 0,
         'propagate': 1,
         'gen_opt': 0,
+        'j2': 0,
+        'aero': 0,
     }
     return config
 
@@ -85,6 +86,7 @@ class orbitsys:
             print("Error - no step size or step count specified")
             sys.exit()
 
+
         self.bodies = bodies
         self.planets = []
         for body in bodies: # place cb and non-cb planets into external data structures
@@ -100,8 +102,9 @@ class orbitsys:
                 self.planets.append(body)
                 self.bodies.remove(body)
         
-        self.prop_planets()
-        self.prop_sats()
+        if self.config['propagate']:
+            self.prop_planets()
+            self.prop_sats()
 
 
 
@@ -134,12 +137,27 @@ class orbitsys:
         # print(np.linalg.norm(r-self.bodies[0].state[i,0:3]))
         cbgrav = - r * self.cb.config['mu'] / np.linalg.norm(r)**3
 
-        perts = 0
+        
+        obgrav = 0
+        j2pert = np.zeros([3])
+
+        if self.config['j2'] == 1:
+            R = np.linalg.norm(r)
+            j2pert[0] += -3/2 * self.cb.config['j2'] *  self.cb.config['mu'] * self.cb.config['radius']**2 * r[0] / R**5 * (1 - 5*r[2]**2/R**2)
+            j2pert[1] += -3/2 * self.cb.config['j2'] *  self.cb.config['mu'] * self.cb.config['radius']**2 * r[1] / R**5 * (1 - 5*r[2]**2/R**2)
+            j2pert[2] += -3/2 * self.cb.config['j2'] *  self.cb.config['mu'] * self.cb.config['radius']**2 * r[2] / R**5 * (3 - 5*r[2]**2/R**2)
+        
         for planet in self.planets:
             r_co = state[0:3] - planet.state[i-1,0:3]
-            perts += - planet.config['mu'] / np.linalg.norm(r_co)**3 * r_co
+            obgrav += - planet.config['mu'] / np.linalg.norm(r_co)**3 * r_co
+            if self.config['j2'] == 1:
+                R_co = np.linalg.norm(r)
+                j2pert[0] += -3/2 * planet.config['j2'] *  planet.config['mu'] * planet.config['radius']**2 * r_co[0] / R_co**5 * (1 - 5*r_co[2]**2/R_co**2)
+                j2pert[1] += -3/2 * planet.config['j2'] *  planet.config['mu'] * planet.config['radius']**2 * r_co[1] / R_co**5 * (1 - 5*r_co[2]**2/R_co**2)
+                j2pert[2] += -3/2 * planet.config['j2'] *  planet.config['mu'] * planet.config['radius']**2 * r_co[2] / R_co**5 * (3 - 5*r_co[2]**2/R_co**2)
+                
             
-        dxdt[3:6] = cbgrav + perts
+        dxdt[3:6] = cbgrav + obgrav + j2pert
         return dxdt
 
     def planet_eoms(self, state, i):
