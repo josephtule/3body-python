@@ -52,11 +52,11 @@ $$
 $$ =
 \left\lbrack \begin{array}{c}
 \vec{x}_{4:6}\\ 
--\frac{\mu_C}{(\vec{x}_{i,1:3}^T\vec{x}_{i,1:3})^{3/2}} \vec{x}_{i,1:3} - \frac{\mu_{O,j}}{(\vec{x}_{i,1:3}-\vec{r}_{O,j})^T(\vec{x}_{1:3}-\vec{r}_{O,j})^{3/2}} (\vec{x}_{1:3}-  \vec{x}_{O,j}) + u_{1:3}\\ 
+-\frac{\mu_C}{(\vec{x}_{i,1:3}^T\vec{x}_{i,1:3})^{3/2}} \vec{x}_{i,1:3} - \sum_{j} \frac{\mu_{O,j}}{(\vec{x}_{i,1:3}-\vec{r}_{O,j})^T(\vec{x}_{1:3}-\vec{r}_{O,j})^{3/2}} (\vec{x}_{1:3}-  \vec{x}_{O,j}) + \vec{u}_{1:3}\\ 
 \end{array}\right\rbrack
 $$
 
-We add $u_{1:3}$ here to imply a thrust control on the satellite.
+We add $\vec{u}_{1:3}$ here to imply a thrust control on the satellite.
 
 ## Perturbations
 In the generation of the optimimal trajectory, perturbations will be ignored, but in the optimal control problem, external perturnbations will be included in order to work the controller. In this project, only gravitational perturbations and aerodynamic perturbations will be considered. 
