@@ -5,13 +5,7 @@ The intent of this project is to create a 3-body simulator that will eventually 
 ## Assumptions
 To start, we will assume the following:
 
-- The initial orbit Earth-Moon system is circular
-- The Moon orbits around the Earth's equator
-- There are no other bodies outside of the 3 body system that may affect the orbits
-
-
 These assumptions can be removed at later phases with additional modeling.
-
 
 ## Equations of Motion
 Using an arbitrary central body (C) with an inertial reference frame as well as an arbitrary number of external "planets" (O), the equations of motion can be represented as the following:
