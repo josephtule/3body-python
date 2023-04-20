@@ -17,11 +17,11 @@ These assumptions can be removed at later phases with additional modeling.
 Using an arbitrary central body (C) with an inertial reference frame as well as an arbitrary number of external "planets" (O), the equations of motion can be represented as the following:
 
 $$\begin{equation}
-\ddot{\vec{r}}_{CS} = -\frac{\mu_{C}}{||\vec{r}_{CS}||^3} \vec{r}_{CS} -\frac{\mu_{O,i}}{||\vec{r}_{OS,i}||^3} \vec{r}_{OS,i}
-= -\frac{\mu_{C}}{||\vec{r}_{CS}||^3} \vec{r}_{CS} -\frac{\mu_{O,i}}{||\vec{r}_{CS} - \vec{r}_{CM}||^3} (\vec{r}_{CS} - \vec{r}_{CM})
+\ddot{\vec{r}}_{CS,i} = -\frac{\mu_{C}}{||\vec{r}_{CS,i}||^3} \vec{r}_{CS,i} -\frac{\mu_{O,j}}{||\vec{r}_{OS,i,j}||^3} \vec{r}_{OS,i,j}
+= -\frac{\mu_{C}}{||\vec{r}_{CS,i}||^3} \vec{r}_{CS,i} -\frac{\mu_{O,j}}{||\vec{r}_{CS,i} - \vec{r}_{CM,j}||^3} (\vec{r}_{CS,i} - \vec{r}_{CM,j})
 \end{equation}$$ 
 
-This equation will be the governing equation for each body other than the central body (including satellites and all "planets"). Since satellites are low in mass, we will ignore their pull on the other bodies but the external planets will affect each other.
+Where i is the ith body of interest and j is the jth external planet. This equation will be the governing equation for each body other than the central body (including satellites and all "planets"). Since satellites are low in mass, we will ignore their pull on the other bodies but the external planets will affect each other. 
 
 ### State Space
 
@@ -29,10 +29,8 @@ To allow for trajectory optimization, we will take to account the position of th
 
 $$
 \vec{x} =  \left\lbrack \begin{array}{c}
-\vec{r}_{ES} \\
-\vec{r}_{EM} \\
-\dot{\vec{r}}_{ES} \\
-\dot{\vec{r}}_{EM} \\
+\vec{r}_{CS,i} \\
+\dot{\vec{r}}_{CS,i} \\
 \end{array}\right\rbrack = 
 \left\lbrack \begin{array}{c}
 \vec{x}_{1:3} \\ 
