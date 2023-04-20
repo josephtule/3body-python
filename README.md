@@ -43,10 +43,10 @@ After the optimal trajectory has been generated, the state can be reduced to a s
 Taking the derivative of the state vector yields
 
 $$
-\dot{\vec{x,i}} = 
+\dot{\vec{x}}_i = 
 \left\lbrack \begin{array}{c}
-\dot{\vec{x}}_{1:3} \\ 
-\dot{\vec{x}}_{4:6} \\ 
+\dot{\vec{x}}_{i,1:3} \\ 
+\dot{\vec{x}}_{i,4:6} \\ 
 \end{array}\right\rbrack$$ 
 
 $$ =
