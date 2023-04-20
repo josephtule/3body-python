@@ -51,10 +51,8 @@ $$
 
 $$ =
 \left\lbrack \begin{array}{c}
-\vec{x}_{7:9} \\ 
-\vec{x}_{10:12} \\ 
--\frac{\mu_E}{(\vec{x}_{1:3}^T\vec{x}_{1:3})^{3/2}} \vec{x}_{1:3} - \frac{\mu_M}{(\vec{x}_{1:3}-\vec{x}_{4:6})^T(\vec{x}_{1:3}-\vec{x}_{4:6})^{3/2}} (\vec{x}_{1:3}-  \vec{x}_{4:6}) + u_{1:3}\\ 
--\frac{\mu_E}{(\vec{x}_{4:6}^T \vec{x}_{4:6})^{3/2}} 
+\vec{x}_{4:6}\\ 
+-\frac{\mu_C}{(\vec{x}_{i,1:3}^T\vec{x}_{i,1:3})^{3/2}} \vec{x}_{i,1:3} - \frac{\mu_{O,j}}{(\vec{x}_{i,1:3}-\vec{x}_{i,4:6})^T(\vec{x}_{1:3}-\vec{x}_{4:6})^{3/2}} (\vec{x}_{1:3}-  \vec{x}_{4:6}) + u_{1:3}\\ 
 \end{array}\right\rbrack
 $$
 
