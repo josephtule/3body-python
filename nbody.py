@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from planets import earth, moon
 import sys
-from gekko import GEKKO
+# from gekko import GEKKO
 
 global pi
 pi = 3.14159
