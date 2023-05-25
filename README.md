@@ -28,8 +28,8 @@ $$
 \dot{\vec{r}}_{CS,i} \\
 \end{array}\right\rbrack = 
 \left\lbrack \begin{array}{c}
-\vec{x}_{1:3} \\ 
-\vec{x}_{4:6} \\ 
+\vec{x}_{1:3} \\
+\vec{x}_{4:6} \\
 \end{array}\right\rbrack
 $$
 
@@ -40,13 +40,13 @@ Taking the derivative of the state vector yields
 $$
 \dot{\vec{x}}_{i} = 
 \left\lbrack \begin{array}{c}
-\dot{\vec{x}}_{i,1:3} \\ 
-\dot{\vec{x}}_{i,4:6} \\ 
+\dot{\vec{x}}_{i,1:3} \\
+\dot{\vec{x}}_{i,4:6} \\
 \end{array}\right\rbrack
 $$ 
 
 $$ = \left\lbrack \begin{array}{c}
-\vec{x}_{4:6}\\ 
+\vec{x}_{4:6}\\
 -\frac{\mu_C}{(\vec{x}_{i,1:3}^T\vec{x}_{i,1:3})^{3/2}} \vec{x}_{i,1:3} - \sum_{j} \frac{\mu_{O,j}}{(\vec{x}_{i,1:3}-\vec{r}_{O,j})^T(\vec{x}_{1:3}-\vec{r}_{O,j})^{3/2}} (\vec{x}_{1:3}-  \vec{x}_{O,j}) + \vec{u}_{1:3}\\ 
 \end{array}\right\rbrack
 $$
