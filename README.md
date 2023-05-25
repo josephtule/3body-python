@@ -33,7 +33,7 @@ $$
 \end{array}\right\rbrack
 $$
 
-After the optimal trajectory has been generated, the state can be reduced to a state vector of size 6, and including the dynamics for the moon along with the generated trajectory since the orbit of the moon is assumed not to be affected by the spacecraft.
+After the optimal trajectory has been generated, the state can be reduced to a state vector of size 6.
 
 Taking the derivative of the state vector yields
 
@@ -45,8 +45,7 @@ $$
 \end{array}\right\rbrack
 $$ 
 
-$$ =
-\left\lbrack \begin{array}{c}
+$$ = \left\lbrack \begin{array}{c}
 \vec{x}_{4:6}\\ 
 -\frac{\mu_C}{(\vec{x}_{i,1:3}^T\vec{x}_{i,1:3})^{3/2}} \vec{x}_{i,1:3} - \sum_{j} \frac{\mu_{O,j}}{(\vec{x}_{i,1:3}-\vec{r}_{O,j})^T(\vec{x}_{1:3}-\vec{r}_{O,j})^{3/2}} (\vec{x}_{1:3}-  \vec{x}_{O,j}) + \vec{u}_{1:3}\\ 
 \end{array}\right\rbrack
