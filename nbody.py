@@ -185,7 +185,7 @@ class orbitsys:
         k4 = self.dt * f(x+k3, i)
         return x + 1/6 * (k1 + 2*k2 + 2*k3 + k4)
 
-    def rk45(self, f, x, i):
+    def rk45(self, f, x, i): # rk45 formula with fixed step size, implement adaptive later
         B = np.array([[0, 0, 0, 0, 0],
                      [2/9, 0, 0, 0, 0],
                      [1/12, 1/4, 0, 0, 0],
