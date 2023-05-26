@@ -1,11 +1,11 @@
 # nbody-python
 
-Note: Github's latex renderer isn't allowing for subscripts in certain locations of an equation for some reason. Some or all latex equations may be broken for the time being.
-
 The intent of this project is to create a 3-body simulator that will eventually generate an optimal trajectory from an orbit about the Earth to an orbit about the Moon, then generate an optimal control sequence in order to stay in the reference trajectory.
 
 ## Assumptions
 To start, we will assume the following:
+
+$$\ddot{\vec{r}}\_{CS,i} = -\frac{\mu\_{C}}{||\vec{r}\_{CS,i}||^3} \vec{r}\_{CS,i}$$
 
 These assumptions can be removed at later phases with additional modeling.
 
@@ -13,8 +13,8 @@ These assumptions can be removed at later phases with additional modeling.
 Using an arbitrary central body (C) with an inertial reference frame as well as an arbitrary number of external "planets" (O), the equations of motion can be represented as the following:
 
 $$\begin{equation}
-\ddot{\vec{r}}_{CS,i} = -\frac{\mu_{C}}{||\vec{r}_{CS,i}||^3} \vec{r}_{CS,i} - \sum_{j} \frac{\mu_{O,j}}{||\vec{r}_{OS,i,j}||^3} \vec{r}_{OS,i,j}
-= -\frac{\mu_{C}}{||\vec{r}_{CS,i}||^3} \vec{r}_{CS,i} - \sum_{j} \frac{\mu_{O,j}}{||\vec{r}_{CS,i} - \vec{r}_{CM,j}||^3} (\vec{r}_{CS,i} - \vec{r}_{CM,j})
+\ddot{\vec{r}}\_{CS,i} = -\frac{\mu\_{C}}{||\vec{r}\_{CS,i}||^3} \vec{r}\_{CS,i} - \sum\_{j} \frac{\mu\_{O,j}}{||\vec{r}\_{OS,i,j}||^3} \vec{r}\_{OS,i,j}
+= -\frac{\mu\_{C}}{||\vec{r}\_{CS,i}||^3} \vec{r}\_{CS,i} - \sum\_{j} \frac{\mu\_{O,j}}{||\vec{r}\_{CS,i} - \vec{r}\_{CM,j}||^3} (\vec{r}\_{CS,i} - \vec{r}\_{CM,j})
 \end{equation}
 $$ 
 
@@ -25,13 +25,13 @@ Where i is the ith body of interest and j is the jth external planet. This equat
 To allow for trajectory optimization, we will take to account the position of the moon at all times, this will result in size 12 state vector, with the state being:
 
 $$
-\vec{x}_{i} =  \left\lbrack \begin{array}{c}
-\vec{r}_{CS,i} \\
-\dot{\vec{r}}_{CS,i} \\
+\vec{x}\_{i} =  \left\lbrack \begin{array}{c}
+\vec{r\}\_{CS,i} \\
+\dot{\vec{r}}\_{CS,i} \\
 \end{array}\right\rbrack = 
 \left\lbrack \begin{array}{c}
-\vec{x}_{1:3} \\ 
-\vec{x}_{4:6} \\ 
+\vec{x}\_{1:3} \\ 
+\vec{x}\_{4:6} \\ 
 \end{array}\right\rbrack
 $$
 
@@ -40,21 +40,21 @@ After the optimal trajectory has been generated, the state can be reduced to a s
 Taking the derivative of the state vector yields
 
 $$
-\dot{\vec{x}}_{i} = 
+\dot{\vec{x}}\_{i} = 
 \left\lbrack \begin{array}{c}
-\dot{\vec{x}}_{i,1:3} \\ 
-\dot{\vec{x}}_{i,4:6} \\ 
+\dot{\vec{x}}\_{i,1:3} \\ 
+\dot{\vec{x}}\_{i,4:6} \\ 
 \end{array}\right\rbrack
 $$ 
 
 $$ =
 \left\lbrack \begin{array}{c}
-\vec{x}_{4:6}\\ 
--\frac{\mu_C}{(\vec{x}_{i,1:3}^T\vec{x}_{i,1:3})^{3/2}} \vec{x}_{i,1:3} - \sum_{j} \frac{\mu_{O,j}}{(\vec{x}_{i,1:3}-\vec{r}_{O,j})^T(\vec{x}_{1:3}-\vec{r}_{O,j})^{3/2}} (\vec{x}_{1:3}-  \vec{x}_{O,j}) + \vec{u}_{1:3}\\ 
+\vec{x}\_{4:6}\\ 
+-\frac{\mu\_C}{(\vec{x}\_{i,1:3}^T\vec{x}\_{i,1:3})^{3/2}} \vec{x}\_{i,1:3} - \sum\_{j} \frac{\mu\_{O,j}}{(\vec{x}\_{i,1:3}-\vec{r}\_{O,j})^T(\vec{x}\_{1:3}-\vec{r}\_{O,j})^{3/2}} (\vec{x}\_{1:3}-  \vec{x}\_{O,j}) + \vec{u}\_{1:3}\\ 
 \end{array}\right\rbrack
 $$
 
-We add $\vec{u}_{1:3}$ here to imply a thrust control on the satellite.
+We add $\vec{u}\_{1:3}$ here to imply a thrust control on the satellite.
 
 ## Perturbations
 In the generation of the optimimal trajectory, perturbations will be ignored, but in the optimal control problem, external perturnbations will be included in order to work the controller. In this project, only gravitational perturbations and aerodynamic perturbations will be considered. 
