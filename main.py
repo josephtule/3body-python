@@ -32,8 +32,8 @@ if __name__ == '__main__':
 
     sc4 = body({'state0':[moon['radius_earth'] + moon['radius'] + 100, 0, 0,  0, np.sqrt(earth['mu']/moon['radius_earth']) + np.sqrt(moon['mu']/(moon['radius'] + 100)), 0]},sat=1)
 
-    bodies = [e1, sc1, sc2, sc3, m1, sc4]
-
+    # bodies = [e1, sc1, sc2, sc3, m1, sc4]
+    bodies = [e1, m1, sc1]
     nbodysys = orbitsys(sys_config, bodies)
     
     plt.figure(1)
@@ -56,4 +56,4 @@ if __name__ == '__main__':
     # ax.set_zlim([-earth['radius']+1000,earth['radius']+1000])
 
     plt.grid()
-    plt.show()
+    # plt.show()

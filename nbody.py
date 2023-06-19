@@ -206,3 +206,22 @@ class orbitsys:
     # reference: https://stackoverflow.com/questions/75285363/infeasibilities-solution-not-found-gekko-error
     def optimize_trajectory(self):
         pass
+
+    # move this to Earth class
+    def readGravCoefs(self,max):
+        f = open('EGM2008_to2190_TideFree','r')
+        n = np.zeros(shape=(1,max),dtype=int)
+        m = np.zeros(shape=(1,max),dtype=int)
+        i = 0
+        C = np.zeros((max,max)); S = np.zeros((max,max))
+        for line in f:
+            n = int(line[4]); m = int(line[9])
+            temp = line[13:34]; temp = temp[:18] + 'e' + temp[19+1:]
+            C[n,m] = float(temp)
+            temp = line[38:59]; temp = temp[:18] + 'e' + temp[19+1:]
+            S[n,m] = float(temp)
+            i += 1
+            print(S[n,m])
+            if i == max:
+                break
+
