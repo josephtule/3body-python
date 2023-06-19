@@ -29,6 +29,7 @@ if __name__ == '__main__':
         'N': 50000,
         'propagate': 1,
         'j2': 1,
+        'gravmodel': '1',
         'C' : C,
         'S' : S,
     }
