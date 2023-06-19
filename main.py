@@ -19,7 +19,6 @@ def readGravCoefs(max):
             temp = line[38:59]; temp = temp[:18] + 'e' + temp[19+1:]
             S[n,m] = float(temp)
             i += 1
-            print(S[n,m])
             if i == max:
                 break
 
@@ -30,6 +29,8 @@ if __name__ == '__main__':
         'N': 50000,
         'propagate': 1,
         'j2': 1,
+        'C' : C,
+        'S' : S,
     }
 
     moon = planets.moon
