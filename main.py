@@ -8,18 +8,16 @@ G = 6.6743e-20
 
 def readGravCoefs(max):
         f = open('EGM2008_to2190_TideFree','r')
-        n = np.zeros(shape=(1,max),dtype=int)
-        m = np.zeros(shape=(1,max),dtype=int)
-        i = 0
-        C = np.zeros((max,max)); S = np.zeros((max,max))
+        i = 1
+        C = np.zeros((max+1,max+1)); S = np.zeros((max+1,max+1))
         for line in f:
-            n = int(line[4]); m = int(line[9])
+            n = int(line[:5]); m = int(line[6:10])
             temp = line[13:34]; temp = temp[:18] + 'e' + temp[19+1:]
             C[n,m] = float(temp)
             temp = line[38:59]; temp = temp[:18] + 'e' + temp[19+1:]
             S[n,m] = float(temp)
             i += 1
-            if i == max:
+            if i == max+1:
                 break
         return C,S
 
@@ -63,7 +61,7 @@ if __name__ == '__main__':
     ax.plot3D(sc1.state[:, 0], sc1.state[:, 1], sc1.state[:, 2])
     # ax.plot3D(sc2.state[:, 0], sc2.state[:, 1], sc2.state[:, 2])
     # ax.plot3D(sc3.state[:, 0], sc3.state[:, 1], sc3.state[:, 2])
-    ax.plot3D(sc4.state[:, 0], sc4.state[:, 1], sc4.state[:, 2])
+    # ax.plot3D(sc4.state[:, 0], sc4.state[:, 1], sc4.state[:, 2])
 
     ax.plot3D(m1.state[:, 0], m1.state[:, 1], m1.state[:, 2])
     # ax.plot3D(m2.state[:, 0], m2.state[:, 1], m2.state[:, 2])
