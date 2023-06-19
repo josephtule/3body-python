@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from planets import earth, moon
+from scipy import special as spc
 import sys
 # from gekko import GEKKO
 
@@ -21,6 +22,7 @@ def default_config():
         'aero': 0,
         'C' : 0,
         'S' : 0,
+        'max_l', : 0,
     }
     return config
 
@@ -210,4 +212,7 @@ class orbitsys:
     def optimize_trajectory(self):
         pass
 
+    def sphericalharmonics(self):
+        for i in range(0,self.max_l):
+            
 
