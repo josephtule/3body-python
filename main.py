@@ -21,12 +21,15 @@ def readGravCoefs(max):
             i += 1
             if i == max:
                 break
+        return C,S
 
 if __name__ == '__main__':
-
+    
+    C,S = readGravCoefs(2)
+    print(C)
     sys_config = {
         'tspan': [0, 60*60*24*5],
-        'N': 50000,
+        'N': 10000,
         'propagate': 1,
         'j2': 1,
         'gravmodel': '1',
@@ -41,15 +44,15 @@ if __name__ == '__main__':
     e1 = body(earth, planet=1,cb=1)
     m1 = moon; m1['state0'] = [moon['radius_earth'],0,0,0,np.sqrt(earth['mu']/moon['radius_earth']),0]; 
     m1 = body(m1,planet=1,cb=0)
-    m2 = moon; m2['state0'] = [moon['radius_earth']*2,0,0,0,0,np.sqrt(earth['mu']/(moon['radius_earth']*2))]
-    m2 = body(m2,planet=1,cb=0)
+    #m2 = moon; m2['state0'] = [moon['radius_earth']*2,0,0,0,0,np.sqrt(earth['mu']/(moon['radius_earth']*2))]
+    #m2 = body(m2,planet=1,cb=0)
 
     # initialize satellites
     sc1 = body({'state0':[earth['radius'] + 250, 0, 0,       0, np.sqrt(2)/2*np.sqrt(earth['mu']/ (earth['radius'] + 250)), np.sqrt(2)/2*np.sqrt(earth['mu']/ (earth['radius'] + 250))]},sat=1)
-    sc2 = body({'state0':[earth['radius'] + 1000, 0, 0,      0, np.sqrt(earth['mu']/ (earth['radius'] + 1000)), 0]},sat=1)
-    sc3 = body({'state0':[earth['radius'] + 1000, 0, 0,      0, np.sqrt(2)/2 *np.sqrt(earth['mu']/ (earth['radius'] + 1000)), np.sqrt(2)/2 *np.sqrt(earth['mu']/ (earth['radius'] + 1000))]},sat=1)
+    #sc2 = body({'state0':[earth['radius'] + 1000, 0, 0,      0, np.sqrt(earth['mu']/ (earth['radius'] + 1000)), 0]},sat=1)
+    #sc3 = body({'state0':[earth['radius'] + 1000, 0, 0,      0, np.sqrt(2)/2 *np.sqrt(earth['mu']/ (earth['radius'] + 1000)), np.sqrt(2)/2 *np.sqrt(earth['mu']/ (earth['radius'] + 1000))]},sat=1)
 
-    sc4 = body({'state0':[moon['radius_earth'] + moon['radius'] + 100, 0, 0,  0, np.sqrt(earth['mu']/moon['radius_earth']) + np.sqrt(moon['mu']/(moon['radius'] + 100)), 0]},sat=1)
+    #sc4 = body({'state0':[moon['radius_earth'] + moon['radius'] + 100, 0, 0,  0, np.sqrt(earth['mu']/moon['radius_earth']) + np.sqrt(moon['mu']/(moon['radius'] + 100)), 0]},sat=1)
 
     # bodies = [e1, sc1, sc2, sc3, m1, sc4]
     bodies = [e1, m1, sc1]
