@@ -40,6 +40,7 @@ def default_body(type):
             'radius': 6378.14,  # km
             'j2': 1.08262668355e-3,
         }
+
     return body
 
 
@@ -207,21 +208,4 @@ class orbitsys:
     def optimize_trajectory(self):
         pass
 
-    # move this to Earth class
-    def readGravCoefs(self,max):
-        f = open('EGM2008_to2190_TideFree','r')
-        n = np.zeros(shape=(1,max),dtype=int)
-        m = np.zeros(shape=(1,max),dtype=int)
-        i = 0
-        C = np.zeros((max,max)); S = np.zeros((max,max))
-        for line in f:
-            n = int(line[4]); m = int(line[9])
-            temp = line[13:34]; temp = temp[:18] + 'e' + temp[19+1:]
-            C[n,m] = float(temp)
-            temp = line[38:59]; temp = temp[:18] + 'e' + temp[19+1:]
-            S[n,m] = float(temp)
-            i += 1
-            print(S[n,m])
-            if i == max:
-                break
 
