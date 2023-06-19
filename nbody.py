@@ -19,6 +19,8 @@ def default_config():
         'gen_opt': 0,
         'j2': 0,
         'aero': 0,
+        'C' : 0,
+        'S' : 0,
     }
     return config
 
