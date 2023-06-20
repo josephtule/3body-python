@@ -71,6 +71,6 @@ if __name__ == '__main__':
     # ax.set_xlim([-earth['radius']+1000,earth['radius']+1000])
     # ax.set_ylim([-earth['radius']+1000,earth['radius']+1000])
     # ax.set_zlim([-earth['radius']+1000,earth['radius']+1000])
-
+    nbodysys.sphericalharmonics()
     plt.grid()
     # plt.show()

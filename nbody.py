@@ -214,9 +214,34 @@ class orbitsys:
     # reference: https://stackoverflow.com/questions/75285363/infeasibilities-solution-not-found-gekko-error
     def optimize_trajectory(self):
         pass
-    # https://ntrs.nasa.gov/api/citations/20160011252/downloads/20160011252.pdf
-    def sphericalharmonics(self):
-        for i in range(0,self.config['max_l']):
-            
-            
 
+
+
+    # https://ntrs.nasa.gov/api/citations/20160011252/downloads/20160011252.pdf
+    def sphericalharmonics(self,state,i):
+        mu = self.cb.config['mu']
+        R = self.cb.config['radius']
+        max_l = self.config['max_l']
+        r = state[0:3]
+        rmag = np.norm(r)
+        n = 0; m = 0
+        V = np.zeros((max_l,max_l))
+        W = np.zeros((max_l,max_l))
+        
+
+       
+        for m in range(1,max_l+1):
+            if m == 0:
+                V[0,0] = R/r
+                W[0,0] = 0
+            else:
+                # calculate the diagonal
+                V[m,m] = (2*m - 1) * (r[0] * V[m-1,m-1] - r[1] * W[m-1,m-1]) * R/rmag**2
+                W[m,m] = (2*m - 1) * (r[0] * W[m-1,m-1] + r[1] * V[m-1,m-1]) * R/rmag**2
+
+            # calculate downwards
+            for n in range(m+1,max_l+1):
+                V[n,m] = (2*n-1)/(n-m) * r[2]*R/rmag**2 * V[n-1,m] - (n+m-1)/(n-m) * R**2/r**2 * V[n-2,m]
+                W[n,m] = (2*n-1)/(n-m) * r[2]*R/rmag**2 * W[n-1,m] - (n+m-1)/(n-m) * R**2/r**2 * W[n-2,m]
+
+        return V,W
