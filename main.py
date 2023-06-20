@@ -7,28 +7,26 @@ global G
 G = 6.6743e-20
 
 def readGravCoefs(max):
-        f = open('EGM2008_to2190_TideFree','r')
-        C = np.zeros((max+1,max+1)); S = np.zeros((max+1,max+1))
-        for line in f:
-            n = int(line[:5]); m = int(line[6:10])
-            if n == max+1:
-                break
-            temp = line[13:34]; temp = temp[:18] + 'e' + temp[19+1:]
-            C[n,m] = float(temp)
-            temp = line[38:59]; temp = temp[:18] + 'e' + temp[19+1:]
-            S[n,m] = float(temp)
-            
-        return C,S
+    f = open('EGM2008_to2190_TideFree','r')
+    C = np.zeros((max+1,max+1)); S = np.zeros((max+1,max+1))
+    for line in f:
+        n = int(line[:5]); m = int(line[6:10])
+        if n == max+1:
+            break    
+        temp = line[13:34]; temp = temp[:18] + 'e' + temp[19+1:]
+        C[n,m] = float(temp)
+        temp = line[38:59]; temp = temp[:18] + 'e' + temp[19+1:]
+        S[n,m] = float(temp)
+    return C,S
 
 if __name__ == '__main__':
     
-    C,S = readGravCoefs(4)
-    print(C)
+    C,S = readGravCoefs(100)
     sys_config = {
         'tspan': [0, 60*60*24*5],
         'N': 10000,
         'propagate': 1,
-        'j2': 1,
+        'pert' : ['sphericalharmonics'],
         'gravmodel': '1',
         'C' : C,
         'S' : S,

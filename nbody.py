@@ -22,6 +22,7 @@ def default_config():
         'aero': 0,
         'C' : 0,
         'S' : 0,
+        'perts': [],
         'max_l' : 0,
     }
     return config
@@ -145,7 +146,9 @@ class orbitsys:
         
         obgrav = 0
         j2pert = np.zeros([3])
-
+        
+        if 'sphericalharmonics' in self.config['perts']:
+            self.config['j2'] = 1
         if self.config['j2'] == 1:
             R = np.linalg.norm(r)
             j2pert[0] += -3/2 * self.cb.config['j2'] *  self.cb.config['mu'] * self.cb.config['radius']**2 * r[0] / R**5 * (1 - 5*r[2]**2/R**2)
