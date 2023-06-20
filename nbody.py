@@ -215,7 +215,8 @@ class orbitsys:
     def optimize_trajectory(self):
         pass
     # https://ntrs.nasa.gov/api/citations/20160011252/downloads/20160011252.pdf
-    # def sphericalharmonics(self):
-    #     for i in range(0,self.max_l):
-    #         
+    def sphericalharmonics(self):
+        for i in range(0,self.config['max_l']):
+            
+            
 
