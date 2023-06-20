@@ -8,22 +8,21 @@ G = 6.6743e-20
 
 def readGravCoefs(max):
         f = open('EGM2008_to2190_TideFree','r')
-        i = 1
         C = np.zeros((max+1,max+1)); S = np.zeros((max+1,max+1))
         for line in f:
             n = int(line[:5]); m = int(line[6:10])
+            if n == max+1:
+                break
             temp = line[13:34]; temp = temp[:18] + 'e' + temp[19+1:]
             C[n,m] = float(temp)
             temp = line[38:59]; temp = temp[:18] + 'e' + temp[19+1:]
             S[n,m] = float(temp)
-            i += 1
-            if i == max+1:
-                break
+            
         return C,S
 
 if __name__ == '__main__':
     
-    C,S = readGravCoefs(2)
+    C,S = readGravCoefs(4)
     print(C)
     sys_config = {
         'tspan': [0, 60*60*24*5],

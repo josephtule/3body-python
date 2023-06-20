@@ -22,7 +22,7 @@ def default_config():
         'aero': 0,
         'C' : 0,
         'S' : 0,
-        'max_l', : 0,
+        'max_l' : 0,
     }
     return config
 
@@ -212,7 +212,7 @@ class orbitsys:
     def optimize_trajectory(self):
         pass
     # https://ntrs.nasa.gov/api/citations/20160011252/downloads/20160011252.pdf
-    def sphericalharmonics(self):
-        for i in range(0,self.max_l):
-            
+    # def sphericalharmonics(self):
+    #     for i in range(0,self.max_l):
+    #         
 
